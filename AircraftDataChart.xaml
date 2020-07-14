@@ -1,0 +1,207 @@
+﻿<Window x:Class="Mission_Assistant.AircraftDataChart"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mission_Assistant"
+        xmlns:converters="clr-namespace:Mission_Assistant"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Add Aircraft" Height="600" Width="1280">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Background="DarkGreen" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Height="25" LastChildFill="False">
+            <StackPanel Orientation="Horizontal" Background="Transparent" DockPanel.Dock="Left" Margin="10,0,10,0">
+                <Label Content="ALT:" FontSize="12" Foreground="White"/>
+                <ComboBox x:Name="alt_units" SelectedIndex="0" Height="20" SelectedValuePath="Content" SelectionChanged="changeUnits">
+                    <ComboBoxItem Content="M"/>
+                    <ComboBoxItem Content="KM"/>
+                    <ComboBoxItem Content="FT"/>
+                </ComboBox>
+                <Label Content="Distance:" FontSize="12" Foreground="White" Margin="10,0,0,0"/>
+                <ComboBox x:Name="dist_units" SelectedIndex="0" Height="20" SelectedValuePath="Content" SelectionChanged="changeUnits">
+                    <ComboBoxItem Content="KM"/>
+                    <ComboBoxItem Content="NM"/>
+                </ComboBox>
+                <Label Content="Speed:" FontSize="12" Foreground="White" Margin="10,0,0,0"/>
+                <ComboBox x:Name="speed_units" SelectedIndex="0" Height="20" SelectedValuePath="Content" SelectionChanged="changeUnits">
+                    <ComboBoxItem Content="TAS-KPH"/>
+                    <ComboBoxItem Content="TAS-MACH"/>
+                    <ComboBoxItem Content="TAS-KTS"/>
+                </ComboBox>
+                <Label Content="Fuel:" FontSize="12" Foreground="White" Margin="10,0,0,0"/>
+                <ComboBox x:Name="fuel_units" SelectedIndex="0" Height="20" SelectedValuePath="Content" SelectionChanged="changeUnits">
+                    <ComboBoxItem Content="KG"/>
+                    <ComboBoxItem Content="LBS"/>
+                    <ComboBoxItem Content="LTR"/>
+                </ComboBox>
+                <Label Content="LFFT:" FontSize="12" Foreground="White" Margin="10,0,0,0"/>
+                <ComboBox x:Name="lfft_units" SelectedIndex="0" Height="20" SelectedValuePath="Content" SelectionChanged="changeUnits">
+                    <ComboBoxItem Content="PER KM"/>
+                    <ComboBoxItem Content="PER MIN"/>
+                </ComboBox>
+                <Button x:Name="default_unitsBtn" Content="Fix Units" Width="80" Margin="80,2,0,2" Click="fixUnits"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Background="Transparent" DockPanel.Dock="Right" Margin="0,0,10,0" >
+                <TextBlock Text="Aircraft Name" Foreground="White" VerticalAlignment="Center"/>
+                <TextBox x:Name="aircraftNameBx" Width="150" Margin="10,3"/>
+            </StackPanel>
+        </DockPanel>
+        <Grid Grid.Column="0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="Performance Data" TextAlignment="Center" Background="DarkBlue" Foreground="White" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="12"/>
+            <Label Content="ALT" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="SemiBold" FontSize="14" Background="LightBlue" Foreground="Black" Grid.Row="1" Grid.Column="0" Grid.RowSpan="2"/>
+            <Label Content="Climb Performance" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="Gray" Foreground="White" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3"/>
+            <StackPanel Orientation="Vertical" Background="Gray" Grid.Column="1" Grid.Row="2">
+                <TextBlock Text="Time" TextAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+                <TextBlock Text="MM:SS" TextAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+            </StackPanel>
+            <Label Content="Distance" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White" Background="Gray" Grid.Column="2" Grid.Row="2"/>
+            <Label Content="Fuel" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White" Background="Gray" Grid.Row="2" Grid.Column="3"/>
+            <Label Content="Descend Performance" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White" Background="DarkGreen" Grid.Row="1" Grid.Column="4" Grid.ColumnSpan="3"/>
+            <StackPanel Orientation="Vertical" Background="DarkGreen" Grid.Column="4" Grid.Row="2">
+                <TextBlock Text="Time" TextAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+                <TextBlock Text="MM:SS" TextAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+            </StackPanel>
+            <Label Content="Distance" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White" Background="DarkGreen" Grid.Column="5" Grid.Row="2"/>
+            <Label Content="Fuel" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White" Background="DarkGreen" Grid.Row="2" Grid.Column="6"/>
+            <Label Content="Level Flight Fuel Consumption" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="Black" Background="#FFF0F00A" Grid.Column="7" Grid.Row="1" Grid.ColumnSpan="5"/>
+            <xctk:WatermarkTextBox x:Name="dataspd1" Grid.Row="2" Grid.Column="7" Background="#FFF0F00A" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextWrapping="Wrap" FontSize="14" Watermark="Insert Speed" KeyDown="numericFilter"/>
+            <xctk:WatermarkTextBox x:Name="dataspd2" Grid.Row="2" Grid.Column="8" Background="#FFF0F00A" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextWrapping="Wrap" FontSize="14" Watermark="Insert Speed" KeyDown="numericFilter"/>
+            <xctk:WatermarkTextBox x:Name="dataspd3" Grid.Row="2" Grid.Column="9" Background="#FFF0F00A" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextWrapping="Wrap" FontSize="14" Watermark="Insert Speed" KeyDown="numericFilter"/>
+            <xctk:WatermarkTextBox x:Name="dataspd4" Grid.Row="2" Grid.Column="10" Background="#FFF0F00A" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextWrapping="Wrap" FontSize="14" Watermark="Insert Speed" KeyDown="numericFilter"/>
+            <xctk:WatermarkTextBox x:Name="dataspd5" Grid.Row="2" Grid.Column="11" Background="#FFF0F00A" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextWrapping="Wrap" FontSize="14" Watermark="Insert Speed" KeyDown="numericFilter"/>
+            <DataGrid x:Name="performanceChart" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="12" CanUserAddRows="True" AutoGenerateColumns="False" CanUserDeleteRows="True" HeadersVisibility="None" CellEditEnding="applyDataValidation" BeginningEdit="lockControls">
+                <DataGrid.Resources>
+                    <converters:TimeSpanConverter x:Key="timeConvert"/>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="*" Binding="{Binding alt}"/>
+                    <DataGridTemplateColumn Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding climbtime, Converter={StaticResource timeConvert}}" TextAlignment="Right"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" Value="{Binding cTimeval}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Width="*" Binding="{Binding climbdist}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding climbfuel}"/>
+                    <DataGridTemplateColumn Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding descendtime, Converter={StaticResource timeConvert}}" TextAlignment="Right"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" Value="{Binding dTimeval}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Width="*" Binding="{Binding descenddist}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding descendfuel}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding spd1}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding spd2}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding spd3}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding spd4}"/>
+                    <DataGridTextColumn Width="*" Binding="{Binding spd5}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <GridSplitter Grid.Column="1" Grid.Row="1" Width="3" Grid.RowSpan="3" Background="Transparent"/>
+            <GridSplitter Grid.Column="2" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="3" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="4" Grid.Row="1" Width="3" Grid.RowSpan="3" Background="Transparent"/>
+            <GridSplitter Grid.Column="5" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="6" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="7" Grid.Row="1" Width="3" Grid.RowSpan="3" Background="Transparent"/>
+            <GridSplitter Grid.Column="8" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="9" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="10" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="11" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+            <GridSplitter Grid.Column="12" Grid.Row="2" Width="3" Grid.RowSpan="2" Background="Transparent"/>
+        </Grid>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="1">
+            <Label Content="Fuel Data" Background="DarkBlue" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+            <Label Content="Starting" Background="DarkGreen" Foreground="White" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <DataGrid x:Name="startFuelChart" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" CanUserAddRows="True" CanUserDeleteRows="True" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" AutoGenerateColumns="False" HeadersVisibility="None" Margin="5,0,0,0" Height="180" CellEditEnding="applyDataValidation"  BeginningEdit="lockControls">
+                    <DataGrid.Resources>
+                        <Style x:Key="cellStyle" TargetType="{x:Type DataGridCell}">
+                            <Setter Property="Background" Value="LightGray"/>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*" CellStyle="{StaticResource cellStyle}" FontWeight="SemiBold" Binding="{Binding startlabel}"/>
+                        <DataGridTextColumn Width="*" Binding="{Binding startval}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+            <Label Content="Reduction" Background="#FFFECD44" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,0,0"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <DataGrid x:Name="reductionFuelChart" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" CanUserAddRows="True" CanUserDeleteRows="True" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" AutoGenerateColumns="False" HeadersVisibility="None" Margin="5,0,0,0" Height="180" CellEditEnding="applyDataValidation"  BeginningEdit="lockControls">
+                    <DataGrid.Resources>
+                        <Style x:Key="cellStyle" TargetType="{x:Type DataGridCell}">
+                            <Setter Property="Background" Value="LightGray"/>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*" CellStyle="{StaticResource cellStyle}" FontWeight="SemiBold" Binding="{Binding reductionlabel}"/>
+                        <DataGridTextColumn Width="*" Binding="{Binding reductionval}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+            <Button x:Name="saveBtn" Content="Save" Width="100" Height="23" Margin="0,50,0,0" Click="saveData"/>
+        </StackPanel>
+    </Grid>
+</Window>
