@@ -61,7 +61,7 @@
             </TabItem>
             <TabItem Header="View" FontSize="18" Width="100" Height="35">
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="mapBtn" Width="60" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
+                    <Button x:Name="mapBtn" Width="60" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White" Click="globalButtonOperations">
                         <StackPanel Orientation="Vertical">
                             <Image Source="Assets\maps.png" Width="30" Height="30"/>
                             <TextBlock Text="Maps" FontSize="14" Margin="0,5,0,0"/>
@@ -291,7 +291,7 @@
             </TabItem>
         </TabControl>
         <Canvas x:Name="drawCanvas" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="0" ClipToBounds="True" Background="Gray" MouseDown="drawOverlayMouseDown" MouseUp="drawOverlayMouseUp" MouseWheel="drawOverlayMouseWheel" MouseMove="drawOverlayMouseMove">
-            <gmaps:GMapControl x:Name="Gmap" CanDragMap="True" Canvas.Top="0" Canvas.Left="0" Width="{Binding ActualWidth, ElementName=drawCanvas}" Height="{Binding ActualHeight, ElementName=drawCanvas}" MouseEnter="GmapMouseEnter" MouseLeave="GmapMouseLeave" OnMapZoomChanged="repositionPoints" OnMapDrag="repositionPoints"/>
+            <gmaps:GMapControl x:Name="Gmap" CanDragMap="True" Canvas.Top="0" Canvas.Left="0" Panel.ZIndex="0" Width="{Binding ActualWidth, ElementName=drawCanvas}" Height="{Binding ActualHeight, ElementName=drawCanvas}" MouseEnter="GmapMouseEnter" MouseLeave="GmapMouseLeave" OnMapZoomChanged="GmapZoomChanged" OnMapDrag="GmapDrag"/>
         </Canvas>
         
         
@@ -558,9 +558,9 @@
         <Rectangle Fill="Black" Opacity="0.5" Width="{Binding ElementName=btm}" Height="{Binding ElementName=btm}" Grid.Column="2" Grid.Row="4"/>
         <StackPanel x:Name="btm" Orientation="Horizontal" Grid.Row="4" Grid.Column="2" Background="Transparent">
             <TextBlock Text="Latitude :" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
-            <TextBlock x:Name="pos_lat" Width="150" Margin="0,5" FontSize="14" TextAlignment="Center" Foreground="LightGray"/>
-            <TextBlock Text="Longitude" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
-            <TextBlock x:Name="pos_long" Width="150" Margin="0,5" FontSize="14" TextAlignment="Center" Foreground="LightGray"/>
+            <TextBlock x:Name="pos_lat" Width="150" Margin="10,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
+            <TextBlock Text="Longitude :" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
+            <TextBlock x:Name="pos_long" Width="150" Margin="10,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
         </StackPanel>
     </Grid>
 </Window>

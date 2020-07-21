@@ -44,6 +44,7 @@ namespace Mission_Assistant
         public Line line = null;
         public Ellipse ellipse = null;
         public StackPanel headingBox = null;
+        public Image bafChart;
         public string mode = "none";
         public bool set = false, draggable = false, drawn = false, adflag;
         public int lineCount = -1, routeCount = -1, circleCount = -1, polygonCount = -1, markerCount = -1, boxCount = -1, count = 0;
@@ -91,6 +92,22 @@ namespace Mission_Assistant
             Gmap.MaxZoom = 20;
             Gmap.Zoom = 8;
             Gmap.ShowCenter = false;
+            try
+            {
+                bafChart = new Image { Source = (ImageSource)(new ImageSourceConverter().ConvertFrom(@"BAFMap.png")), Width = 620, Height = 690, Margin = new Thickness(-310, -345, -310, -345), RenderTransformOrigin = new Point(0.5, 0.5), IsHitTestVisible = false };
+            }
+            catch
+            {
+                MessageBox.Show("Couldn't load BAF Map Chart", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown(-1);
+            }
+            GPoint baf_anch = Gmap.FromLatLngToLocal(new PointLatLng(23.7250117359518, 90.50537109375));
+            Canvas.SetLeft(bafChart, baf_anch.X);
+            Canvas.SetTop(bafChart, baf_anch.Y);
+            bafChart.RenderTransform = new ScaleTransform((0.0154453125 * Math.Pow(2, Gmap.Zoom - 1)), (0.015671875 * Math.Pow(2, Gmap.Zoom - 1)));
+            drawCanvas.Children.Add(bafChart);
+            Panel.SetZIndex(bafChart, 0);
+            bafChart.Visibility = Visibility.Hidden;
         }
 
         private void drawOverlayMouseDown(object sender, MouseButtonEventArgs e)
@@ -800,10 +817,25 @@ namespace Mission_Assistant
 
         }
 
+        private void GmapZoomChanged()
+        {
+            repositionPoints();
+            (bafChart.RenderTransform as ScaleTransform).ScaleX = 0.0154453125 * Math.Pow(2, Gmap.Zoom - 1);
+            (bafChart.RenderTransform as ScaleTransform).ScaleY = 0.015671875 * Math.Pow(2, Gmap.Zoom - 1);
+        }
+
+        private void GmapDrag()
+        {
+            repositionPoints();
+        }
+
         private void globalButtonOperations(object sender, RoutedEventArgs e)
         {
             switch ((sender as Button).Name)
             {
+                case "mapBtn":
+                    bafChart.Visibility = Visibility.Visible;
+                    break;
                 case "platformsBtn":
                     Platforms platform_editor = new Platforms();
                     platform_editor.ShowDialog();
@@ -1492,6 +1524,9 @@ namespace Mission_Assistant
 
         private void repositionPoints()
         {
+            GPoint baf_anch = Gmap.FromLatLngToLocal(new PointLatLng(23.7250117359518, 90.50537109375));
+            Canvas.SetLeft(bafChart, baf_anch.X);
+            Canvas.SetTop(bafChart, baf_anch.Y);
             foreach (UIElement tmp in drawCanvas.Children)
             {
                 if (tmp is Ellipse)
