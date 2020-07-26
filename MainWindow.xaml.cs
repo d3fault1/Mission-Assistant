@@ -934,15 +934,18 @@ namespace Mission_Assistant
                 case "headingPlus":
                     break;
                 case "headingOffsetPlus":
-                    if ((line.Tag as RouteData).offset < maxoffset) (line.Tag as RouteData).offset += 5;
-                    for (int n = 0; n < drawCanvas.Children.Count; n++)
+                    if (line != null)
                     {
-                        if (drawCanvas.Children[n] is StackPanel)
+                        if ((line.Tag as RouteData).offset < maxoffset) (line.Tag as RouteData).offset += 5;
+                        for (int n = 0; n < drawCanvas.Children.Count; n++)
                         {
-                            if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                            if (drawCanvas.Children[n] is StackPanel)
                             {
-                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
-                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                                if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                                {
+                                    BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
+                                    BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                                }
                             }
                         }
                     }
@@ -966,15 +969,18 @@ namespace Mission_Assistant
                 case "headingMinus":
                     break;
                 case "headingOffsetMinus":
-                    if ((line.Tag as RouteData).offset > minoffset) (line.Tag as RouteData).offset -= 5;
-                    for (int n = 0; n < drawCanvas.Children.Count; n++)
+                    if (line != null)
                     {
-                        if (drawCanvas.Children[n] is StackPanel)
+                        if ((line.Tag as RouteData).offset > minoffset) (line.Tag as RouteData).offset -= 5;
+                        for (int n = 0; n < drawCanvas.Children.Count; n++)
                         {
-                            if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                            if (drawCanvas.Children[n] is StackPanel)
                             {
-                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
-                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                                if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                                {
+                                    BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
+                                    BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                                }
                             }
                         }
                     }
