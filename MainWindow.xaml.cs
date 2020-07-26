@@ -3,13 +3,11 @@ using GMap.NET;
 using GMap.NET.MapProviders;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.SQLite;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,7 +20,7 @@ namespace Mission_Assistant
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         private struct BaseUnit
         {
@@ -49,29 +47,11 @@ namespace Mission_Assistant
         public bool set = false, draggable = false, drawn = false, adflag;
         public int lineCount = -1, routeCount = -1, circleCount = -1, polygonCount = -1, markerCount = -1, boxCount = -1, count = 0;
         public double left, top;
-
-        private int offset = 0;
-        private const int minoffset = 5, maxoffset = 100;
+        private const int minoffset = 5, maxoffset = 50;
         private const double minThickness = 0.1, maxThickness = 30, minRadius = 0.1, maxRadius = 2000;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public int OffSet
-        {
-            get
-            {
-                return offset;
-            }
-            set
-            {
-                if (value < minoffset) offset = minoffset;
-                else if (value > maxoffset) offset = maxoffset;
-                else offset = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("OffSet"));
-            }
-        }
         public MainWindow()
         {
             InitializeComponent();
-            offset = 20;
             pdatas = new List<PerformanceData>();
             fsdatas = new List<FuelStartData>();
             frdatas = new List<FuelReduceData>();
@@ -142,8 +122,11 @@ namespace Mission_Assistant
         {
             currentPoint = e.GetPosition(drawCanvas);
             PointLatLng currentposition = Gmap.FromLocalToLatLng((int)currentPoint.X, (int)currentPoint.Y);
-            pos_lat.Text = Math.Round(currentposition.Lat, 6).ToString();
-            pos_long.Text = Math.Round(currentposition.Lng, 6).ToString();
+            double[] dmsLat, dmsLng;
+            dmsLat = DataConverters.CoordinateUnits(currentposition.Lat, "DEGREE", "DMS");
+            dmsLng = DataConverters.CoordinateUnits(currentposition.Lng, "DEGREE", "DMS");
+            pos_lat.Text = String.Format($"{dmsLat[0]}°{dmsLat[1]}'{dmsLat[2]}\"N");
+            pos_long.Text = String.Format($"{dmsLng[0]}°{dmsLng[1]}'{dmsLng[2]}\"E");
             if (e.LeftButton == MouseButtonState.Pressed && draggable)
             {
                 Canvas.SetLeft(ellipse, left + currentPoint.X - clickedPoint.X);
@@ -429,37 +412,53 @@ namespace Mission_Assistant
                                 (line.Tag as RouteData).pos2 = position;
                                 var pos1 = (line.Tag as RouteData).pos1;
                                 var tp = (line.Tag as RouteData).type;
-                                headingBox = new StackPanel { Orientation = Orientation.Vertical, Width = 120, Height = 160, Background = Brushes.Transparent, Margin = new Thickness(-60, -80, -60, -80) };
-                                headingBox.RenderTransformOrigin = new Point(0.5, 0.5);
-                                RotateTransform rt = new RotateTransform();
-                                headingBox.RenderTransform = rt;
+                                Viewbox arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5) } };
+                                (arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                arrow.RenderTransform = new RotateTransform();
+                                MultiBinding arrowX = new MultiBinding { Converter = new ArrowConverterXY() };
+                                arrowX.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
+                                arrowX.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
+                                arrow.SetBinding(Canvas.LeftProperty, arrowX);
+                                MultiBinding arrowY = new MultiBinding { Converter = new ArrowConverterXY() };
+                                arrowY.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
+                                arrowY.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
+                                arrow.SetBinding(Canvas.TopProperty, arrowY);
+                                MultiBinding arrowθ = new MultiBinding { Converter = new ArrowConverterθ() };
+                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
+                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
+                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
+                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
+                                BindingOperations.SetBinding(arrow.RenderTransform as RotateTransform, RotateTransform.AngleProperty, arrowθ);
+                                headingBox = new StackPanel { Orientation = Orientation.Vertical, Width = 120, Height = 160, Background = Brushes.Transparent, Margin = new Thickness(-60, -80, -60, -80), RenderTransformOrigin = new Point(0.5, 0.5) };
                                 headingBox.Children.Add(new Path { Stroke = Brushes.Black, StrokeThickness = 3, Fill = Brushes.DarkRed, Data = PathGeometry.Parse("M1.5,1.5 L1.5,38.5 118.5,38.5 Z") });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
-                                MultiBinding X = new MultiBinding { Converter = new OffsetConverterX() };
+                                headingBox.RenderTransform = new RotateTransform();
+                                MultiBinding X = new MultiBinding { Converter = new HeadingBoxConverterX() };
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
+                                X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
                                 X.Bindings.Add(new Binding { Source = headingBox, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
-                                X.Bindings.Add(new Binding("OffSet") { Source = main });
                                 headingBox.SetBinding(Canvas.LeftProperty, X);
-                                MultiBinding Y = new MultiBinding { Converter = new OffsetConverterY() };
+                                MultiBinding Y = new MultiBinding { Converter = new HeadingBoxConverterY() };
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
+                                Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
                                 Y.Bindings.Add(new Binding { Source = headingBox, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
-                                Y.Bindings.Add(new Binding("OffSet") { Source = main });
                                 headingBox.SetBinding(Canvas.TopProperty, Y);
-                                MultiBinding θ = new MultiBinding { Converter = new OffsetConverterθ() };
+                                MultiBinding θ = new MultiBinding { Converter = new HeadingBoxConverterθ() };
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                BindingOperations.SetBinding(rt, RotateTransform.AngleProperty, θ);
+                                BindingOperations.SetBinding(headingBox.RenderTransform as RotateTransform, RotateTransform.AngleProperty, θ);
                                 Line temp = new Line
                                 {
                                     Stroke = Brushes.Blue,
@@ -486,6 +485,7 @@ namespace Mission_Assistant
                                 drawCanvas.Children.Add(ellipse);
                                 drawCanvas.Children.Add(line);
                                 drawCanvas.Children.Add(headingBox);
+                                drawCanvas.Children.Add(arrow);
                                 ellipse.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = markerCount, isDraggable = true, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 line.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = count, isDraggable = false, pos1 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = "Enroute", totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 headingBox.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = boxCount, isDraggable = false, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
@@ -775,7 +775,6 @@ namespace Mission_Assistant
                         line = temp;
                         (ellipse.Tag as RouteData).type = "Landing";
                         (line.Tag as RouteData).type = "Landing";
-                        Gmap.ReleaseMouseCapture();
                         updateValue(mode);
                         if (mode == "route")
                         {
@@ -796,6 +795,7 @@ namespace Mission_Assistant
                         set = false;
                         drawn = false;
                         mode = "none";
+                        Gmap.ReleaseMouseCapture();
                         drawCanvas.Cursor = Cursors.Arrow;
                     }
                 }
@@ -909,8 +909,6 @@ namespace Mission_Assistant
                     break;
                 case "imgBtn":
                     //mode = "image";
-                    Console.WriteLine((ellipse.Tag as RouteData).componentID);
-                    Console.WriteLine((ellipse.Tag as RouteData).totaldistance);
                     break;
                 case "surfaceBtn":
                     mode = "surface";
@@ -935,6 +933,20 @@ namespace Mission_Assistant
                     break;
                 case "headingPlus":
                     break;
+                case "headingOffsetPlus":
+                    if ((line.Tag as RouteData).offset < maxoffset) (line.Tag as RouteData).offset += 5;
+                    for (int n = 0; n < drawCanvas.Children.Count; n++)
+                    {
+                        if (drawCanvas.Children[n] is StackPanel)
+                        {
+                            if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                            {
+                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
+                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                            }
+                        }
+                    }
+                    break;
                 case "fuelPlus":
                     break;
                 case "labelPlus":
@@ -952,6 +964,20 @@ namespace Mission_Assistant
                 case "waypntMinus":
                     break;
                 case "headingMinus":
+                    break;
+                case "headingOffsetMinus":
+                    if ((line.Tag as RouteData).offset > minoffset) (line.Tag as RouteData).offset -= 5;
+                    for (int n = 0; n < drawCanvas.Children.Count; n++)
+                    {
+                        if (drawCanvas.Children[n] is StackPanel)
+                        {
+                            if (((drawCanvas.Children[n] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && ((drawCanvas.Children[n] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                            {
+                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.TopProperty).UpdateTarget();
+                                BindingOperations.GetMultiBindingExpression(drawCanvas.Children[n] as StackPanel, Canvas.LeftProperty).UpdateTarget();
+                            }
+                        }
+                    }
                     break;
                 case "fuelMinus":
                     break;
@@ -1320,6 +1346,9 @@ namespace Mission_Assistant
                     }
                     routeThickness.Text = line.StrokeThickness.ToString();
                     RouteData dat = ellipse.Tag as RouteData;
+                    double[] dmsLat, dmsLng;
+                    dmsLat = DataConverters.CoordinateUnits(dat.pos2.Lat, "DEGREE", "DMS");
+                    dmsLng = DataConverters.CoordinateUnits(dat.pos2.Lng, "DEGREE", "DMS");
                     routeAcNameBox.Text = pdata.performanceDatas[0].aircraft;
                     msnNameBox.Text = dat.mission;
                     routeTotalDistanceBox.Text = DataConverters.LengthUnits(dat.totaldistance, baseunit.bdistUnit, dat.totaldistanceUnit).ToString();
@@ -1327,7 +1356,7 @@ namespace Mission_Assistant
                     routeTotalFuelBox.Text = dat.totalfuel.ToString();
                     routeStartingFuelBox.Text = dat.startingfuel.ToString();
                     routeMinimaFuelBox.Text = dat.minima.ToString();
-                    routeCoordBox.Text = String.Format($"{Math.Round(dat.pos1.Lat, 6)},{Math.Round(dat.pos1.Lng, 6)}-{Math.Round(dat.pos2.Lat, 6)},{Math.Round(dat.pos2.Lng, 6)}");
+                    routeCoordBox.Text = String.Format($"{dmsLat[0]}°{dmsLat[1]}'{dmsLat[2]}\"N {dmsLng[0]}°{dmsLng[1]}'{dmsLng[2]}\"E");
                     routeNameBox.Text = dat.name;
                     routeTypeBox.Text = dat.type;
                     if (routeTypeBox.SelectedIndex == -1) routeTypeBox.IsEnabled = false;
@@ -2106,6 +2135,7 @@ namespace Mission_Assistant
         {
             line = null;
             ellipse = null;
+            headingBox = null;
             routeProperties.Visibility = Visibility.Collapsed;
             routeLineBlock.Visibility = Visibility.Collapsed;
             circleProperties.Visibility = Visibility.Collapsed;

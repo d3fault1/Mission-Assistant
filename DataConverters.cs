@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom;
+using System.Data.Entity.ModelConfiguration.Configuration;
 
 namespace Mission_Assistant
 {
@@ -162,6 +163,33 @@ namespace Mission_Assistant
                     }
                 default:
                     return Math.Round(val, 3);
+            }
+        }
+
+        public static double[] CoordinateUnits(double val, string from, string to)
+        {
+            switch (to)
+            {
+                case "DMS":
+                    switch (from)
+                    {
+                        case "DEGREE":
+                            double[] dms = new double[3];
+                            for(int i = 0; i < dms.Length; i++)
+                            {
+                                dms[i] = (int)val;
+                                val = (val - (int)val) * 60;
+                            }
+                            return dms;
+                        default:
+                            double[] asIs = new double[1];
+                            asIs[0] = val;
+                            return asIs;
+                    }
+                default:
+                    double[] asis = new double[1];
+                    asis[0] = val;
+                    return asis;
             }
         }
     }

@@ -238,6 +238,21 @@ namespace Mission_Assistant
                 MessageBox.Show("Please Set Default Units for Aircraft Data Parameters.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            if (pdata.performanceDatas.Count == 0)
+            {
+                MessageBox.Show("Performance Data Chart is Empty. Please Fill.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (fsdata.fuelStartDatas.Count == 0)
+            {
+                MessageBox.Show("Starting Fuel Chart is Empty. Please Fill.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (frdata.fuelReduceDatas.Count == 0)
+            {
+                MessageBox.Show("Reduction Fuel Chart is Empty. Please Fill.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
             if (opMode == "add")
             {
                 if (aircraftNameBx.Text == "")

@@ -57,6 +57,7 @@ namespace Mission_Assistant
         public double time = 0;
         public double fuel = 0;
         public double rdfuel = 0;
+        public float offset = 20;
         public bool isDraggable;
 
         private PointLatLng _pos1 = new PointLatLng();

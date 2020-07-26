@@ -112,12 +112,12 @@
                     <DataGridTemplateColumn Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding climbtime, Converter={StaticResource timeConvert}}" TextAlignment="Right"/>
+                                <TextBlock Text="{Binding climbtime, Converter={StaticResource timeConvert}}" TextAlignment="Left"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" Value="{Binding cTimeval}"/>
+                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" TextAlignment="Left" Value="{Binding cTimeval, UpdateSourceTrigger=LostFocus}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
@@ -126,12 +126,12 @@
                     <DataGridTemplateColumn Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding descendtime, Converter={StaticResource timeConvert}}" TextAlignment="Right"/>
+                                <TextBlock Text="{Binding descendtime, Converter={StaticResource timeConvert}}" TextAlignment="Left"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" Value="{Binding dTimeval}"/>
+                                <xctk:TimeSpanUpDown Maximum="{Binding maxVal}" ShowButtonSpinner="False" ShowDays="False" ShowSeconds="False" TextAlignment="Left" Value="{Binding dTimeval, UpdateSourceTrigger=LostFocus}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
