@@ -161,7 +161,7 @@ namespace Mission_Assistant
             switch (parameter as String)
             {
                 case "track":
-                    return info.track;
+                    return Math.Round(info.track, 2);
                 case "time":
                     TimeSpan ts = TimeSpan.FromSeconds(info.time);
                     return String.Format($"{ts.Hours.ToString().PadLeft(2, '0')}:{ts.Minutes.ToString().PadLeft(2, '0')}:{ts.Seconds.ToString().PadLeft(2, '0')}");

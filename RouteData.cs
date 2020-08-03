@@ -319,6 +319,8 @@ namespace Mission_Assistant
             totaldistance = 0;
             totaltime = 0;
             totalfuel = 0;
+            track = Math.Atan2(Math.Cos(pos2.Lat * Math.PI / 180) * Math.Sin((pos2.Lng - pos1.Lng) * Math.PI / 180), Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(pos2.Lat * Math.PI / 180) - Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(pos2.Lat * Math.PI / 180) * Math.Cos((pos2.Lng - pos1.Lng) * Math.PI / 180)) * 180 / Math.PI;
+            if (track < 0) track += 360;
             for (int i = 0; i < parent.Children.Count; i++)
             {
                 if (parent.Children[i] is Ellipse)
