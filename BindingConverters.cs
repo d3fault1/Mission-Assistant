@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace Mission_Assistant
@@ -108,15 +109,30 @@ namespace Mission_Assistant
         }
     }
 
-    class CircleRadiusConverter : IValueConverter
+    class EllipseMarginConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             double width = System.Convert.ToDouble(value);
-            return -(width / 2);
+            return new Thickness(-(width / 2), -(width / 2), -(width / 2), -(width / 2));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class RectangleMarginConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            double width = System.Convert.ToDouble(values[0]);
+            double height = System.Convert.ToDouble(values[1]);
+            return new Thickness(-(width / 2), -(height / 2), -(width / 2), -(height / 2));
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -136,11 +152,12 @@ namespace Mission_Assistant
         }
     }
 
-    class HeadingBoxInfoConverter : IValueConverter
+    class RouteInfoConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             RouteData info = value as RouteData;
+            if (info == null) return String.Empty;
             switch (parameter as String)
             {
                 case "track":
@@ -149,9 +166,17 @@ namespace Mission_Assistant
                     TimeSpan ts = TimeSpan.FromSeconds(info.time);
                     return String.Format($"{ts.Hours.ToString().PadLeft(2, '0')}:{ts.Minutes.ToString().PadLeft(2, '0')}:{ts.Seconds.ToString().PadLeft(2, '0')}");
                 case "fuel":
-                    return Math.Round(info.fuel, 2);
+                    return Math.Round(info.fuel, 3);
                 case "alt":
                     return info.alt;
+                case "rem":
+                    return Math.Round(info.remfuel, 3);
+                case "frcs":
+                    return Math.Round(info.frcsfuel, 3);
+                case "rem2":
+                    return Math.Round(info.landingrem, 3);
+                case "frcs2":
+                    return Math.Round(info.landingfrcs, 3);
             }
             return String.Empty;
         }

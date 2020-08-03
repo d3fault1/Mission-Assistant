@@ -311,7 +311,7 @@
         </Canvas>
 
 
-        <StackPanel x:Name="lineProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="DarkBlue" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
+        <StackPanel x:Name="lineProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="#FF385623" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
             <TextBlock Text="Line Properties" FontSize="20" FontWeight="DemiBold" Foreground="LightYellow" FontStyle="Italic" Margin="15,10,10,30"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Line Color" FontSize="14" Foreground="White" Margin="30,10,0,0"/>
@@ -343,7 +343,7 @@
         </StackPanel>
 
 
-        <StackPanel x:Name="circleProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="DarkBlue" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
+        <StackPanel x:Name="circleProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="#FF385623" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
             <TextBlock Text="Circle Properties" FontSize="20" FontWeight="DemiBold" Foreground="LightYellow" FontStyle="Italic" Margin="15,10,10,30"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Radius" FontSize="14" Foreground="White" Margin="30,10,0,0"/>
@@ -543,7 +543,7 @@
         </ScrollViewer>
 
 
-        <StackPanel x:Name="polygonProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="DarkBlue" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
+        <StackPanel x:Name="polygonProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="#FF385623" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
             <TextBlock Text="Polygon Properties" FontSize="20" FontWeight="DemiBold" Foreground="LightYellow" FontStyle="Italic" Margin="15,10,10,30"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Line Thickness" Margin="20,10,0,0" FontSize="14" Foreground="White"/>
@@ -572,9 +572,8 @@
             <Button x:Name="removePolygon" Content="Remove Polygon" Width="120" Margin="0,50,0,0" Click="removeElement"/>
         </StackPanel>
 
-
         <Rectangle Fill="Black" Opacity="0.5" Width="{Binding ElementName=btm}" Height="{Binding ElementName=btm}" Grid.Column="2" Grid.Row="4"/>
-        <StackPanel x:Name="btm" Orientation="Horizontal" Grid.Row="4" Grid.Column="2" Background="Transparent">
+        <StackPanel x:Name="btm" Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Background="Transparent">
             <TextBlock Text="Latitude :" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
             <TextBlock x:Name="pos_lat" Width="60" Margin="10,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
             <TextBlock Text="Longitude :" FontSize="14" Margin="10,5,0,5" TextAlignment="Center" Foreground="LightGray"/>

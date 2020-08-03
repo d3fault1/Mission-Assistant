@@ -41,13 +41,13 @@ namespace Mission_Assistant
         public Point clickedPoint, currentPoint;
         public Line line = null;
         public Ellipse ellipse = null;
-        public StackPanel headingBox = null;
+        public StackPanel routeDataPanel = null;
         public Image bafChart;
         public string mode = "none";
         public bool set = false, draggable = false, drawn = false, adflag;
         public int lineCount = -1, routeCount = -1, circleCount = -1, polygonCount = -1, markerCount = -1, boxCount = -1, count = 0;
         public double left, top;
-        private const int minoffset = 5, maxoffset = 50;
+        private const int minoffset = 5, maxoffset = 80;
         private const double minThickness = 0.1, maxThickness = 30, minRadius = 0.1, maxRadius = 2000;
         public MainWindow()
         {
@@ -127,7 +127,7 @@ namespace Mission_Assistant
             dmsLng = DataConverters.CoordinateUnits(currentposition.Lng, "DEGREE", "DMS");
             pos_lat.Text = String.Format($"{dmsLat[0]}°{dmsLat[1]}'{dmsLat[2]}\"N");
             pos_long.Text = String.Format($"{dmsLng[0]}°{dmsLng[1]}'{dmsLng[2]}\"E");
-            if (e.LeftButton == MouseButtonState.Pressed && draggable)
+            if (e.LeftButton == MouseButtonState.Pressed && draggable && ellipse != null)
             {
                 Canvas.SetLeft(ellipse, left + currentPoint.X - clickedPoint.X);
                 Canvas.SetTop(ellipse, top + currentPoint.Y - clickedPoint.Y);
@@ -144,7 +144,7 @@ namespace Mission_Assistant
             if (e.ChangedButton == MouseButton.Left)
             {
                 if (set && !Gmap.IsMouseCaptured) Gmap.CaptureMouse();
-                if (currentPoint != clickedPoint && draggable)
+                if (currentPoint != clickedPoint && draggable && ellipse != null)
                 {
                     draggable = false;
                     RouteData datlink = ellipse.Tag as RouteData;
@@ -219,7 +219,7 @@ namespace Mission_Assistant
                             line = BindingOperations.GetBinding(ellipse, Ellipse.StrokeProperty).Source as Line;
                             refreshRoutePanel();
                             updateValue("route");
-                            updateHeadingBoxInfo((ellipse.Tag as RouteData).objID);
+                            updateRouteDataInfo((ellipse.Tag as RouteData).objID);
                             lineProperties.Visibility = Visibility.Collapsed;
                             polygonProperties.Visibility = Visibility.Collapsed;
                             circleProperties.Visibility = Visibility.Collapsed;
@@ -406,7 +406,8 @@ namespace Mission_Assistant
                                 Canvas.SetTop(ellipse, clickedPoint.Y);
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 line.SetBinding(Line.X2Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
                                 line.SetBinding(Line.Y2Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.TopProperty) });
                                 (line.Tag as RouteData).pos2 = position;
@@ -415,6 +416,8 @@ namespace Mission_Assistant
                                 Viewbox arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5) } };
                                 (arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 (arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                arrow.SetBinding(Viewbox.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty) });
+                                arrow.IsVisibleChanged += partsCleanup;
                                 arrow.RenderTransform = new RotateTransform();
                                 MultiBinding arrowX = new MultiBinding { Converter = new ArrowConverterXY() };
                                 arrowX.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
@@ -430,35 +433,56 @@ namespace Mission_Assistant
                                 arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
                                 BindingOperations.SetBinding(arrow.RenderTransform as RotateTransform, RotateTransform.AngleProperty, arrowθ);
-                                headingBox = new StackPanel { Orientation = Orientation.Vertical, Width = 120, Height = 160, Background = Brushes.Transparent, Margin = new Thickness(-60, -80, -60, -80), RenderTransformOrigin = new Point(0.5, 0.5) };
+                                routeDataPanel = new StackPanel { Orientation = Orientation.Vertical, Width = 120, RenderTransformOrigin = new Point(0.5, 0.5) };
+                                MultiBinding datapanelmargin = new MultiBinding { Converter = new RectangleMarginConverter() };
+                                datapanelmargin.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
+                                datapanelmargin.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualHeightProperty) });
+                                routeDataPanel.SetBinding(StackPanel.MarginProperty, datapanelmargin);
+                                Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                                StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
+                                Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
+                                fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
+                                fuelcircle.RowDefinitions.Add(new RowDefinition());
+                                Grid.SetRow(bc, 0);
+                                Grid.SetColumn(bc, 0);
+                                Grid.SetRow(fval, 0);
+                                Grid.SetColumn(fval, 0);
+                                fuelcircle.Children.Add(bc);
+                                fuelcircle.Children.Add(fval);
+                                StackPanel headingBox = new StackPanel { Orientation = Orientation.Vertical, Height = 160, Background = Brushes.Transparent };
                                 headingBox.Children.Add(new Path { Stroke = Brushes.Black, StrokeThickness = 3, Fill = Brushes.DarkRed, Data = PathGeometry.Parse("M1.5,1.5 L1.5,38.5 118.5,38.5 Z") });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
                                 headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
-                                headingBox.RenderTransform = new RotateTransform();
+                                routeDataPanel.Children.Add(headingBox);
+                                routeDataPanel.Children.Add(fuelcircle);
+                                routeDataPanel.SetBinding(StackPanel.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty) });
+                                routeDataPanel.RenderTransform = new RotateTransform();
                                 MultiBinding X = new MultiBinding { Converter = new HeadingBoxConverterX() };
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
-                                X.Bindings.Add(new Binding { Source = headingBox, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
-                                headingBox.SetBinding(Canvas.LeftProperty, X);
+                                X.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
+                                routeDataPanel.SetBinding(Canvas.LeftProperty, X);
                                 MultiBinding Y = new MultiBinding { Converter = new HeadingBoxConverterY() };
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
-                                Y.Bindings.Add(new Binding { Source = headingBox, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
-                                headingBox.SetBinding(Canvas.TopProperty, Y);
+                                Y.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
+                                routeDataPanel.SetBinding(Canvas.TopProperty, Y);
                                 MultiBinding θ = new MultiBinding { Converter = new HeadingBoxConverterθ() };
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                BindingOperations.SetBinding(headingBox.RenderTransform as RotateTransform, RotateTransform.AngleProperty, θ);
+                                BindingOperations.SetBinding(routeDataPanel.RenderTransform as RotateTransform, RotateTransform.AngleProperty, θ);
                                 Line temp = new Line
                                 {
                                     Stroke = Brushes.Blue,
@@ -478,26 +502,32 @@ namespace Mission_Assistant
                                 temp.SetBinding(Line.StrokeEndLineCapProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeEndLineCapProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                                 temp.SetBinding(Line.StrokeDashCapProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeDashCapProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                                 temp.SetBinding(Line.StrokeDashArrayProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeDashArrayProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                temp.SetBinding(Line.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                                 line = temp;
                                 Panel.SetZIndex(line, 4);
                                 line.SetBinding(Line.X1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
                                 line.SetBinding(Line.Y1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.TopProperty) });
+                                (headingBox.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "track" });
+                                (headingBox.Children[2] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "time" });
+                                (headingBox.Children[3] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "fuel" });
+                                (headingBox.Children[4] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "alt" });
+                                (fval.Children[0] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "rem" });
+                                (fval.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "frcs" });
                                 drawCanvas.Children.Add(ellipse);
                                 drawCanvas.Children.Add(line);
-                                drawCanvas.Children.Add(headingBox);
+                                drawCanvas.Children.Add(routeDataPanel);
                                 drawCanvas.Children.Add(arrow);
                                 ellipse.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = markerCount, isDraggable = true, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 line.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = count, isDraggable = false, pos1 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = "Enroute", totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
-                                headingBox.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = boxCount, isDraggable = false, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
-                                (ellipse.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
-                                (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
-                                (headingBox.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
-                                (headingBox.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new HeadingBoxInfoConverter(), ConverterParameter = "track" });
-                                (headingBox.Children[2] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new HeadingBoxInfoConverter(), ConverterParameter = "time" });
-                                (headingBox.Children[3] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new HeadingBoxInfoConverter(), ConverterParameter = "fuel" });
-                                (headingBox.Children[4] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new HeadingBoxInfoConverter(), ConverterParameter = "alt" });
+                                routeDataPanel.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = boxCount, isDraggable = false, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
+                                (ellipse.Tag as RouteData).setfData(frdata);
+                                (line.Tag as RouteData).setfData(frdata);
+                                (routeDataPanel.Tag as RouteData).setfData(frdata);
+                                (ellipse.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
+                                (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
+                                (routeDataPanel.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
                                 updateValue(mode);
-                                updateHeadingBoxInfo((ellipse.Tag as RouteData).objID);
+                                updateRouteDataInfo((ellipse.Tag as RouteData).objID);
                             }
                             else
                             {
@@ -527,15 +557,18 @@ namespace Mission_Assistant
                                 Canvas.SetTop(ellipse, clickedPoint.Y);
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 line.SetBinding(Line.X1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
                                 line.SetBinding(Line.Y1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.TopProperty) });
                                 drawCanvas.Children.Add(ellipse);
                                 drawCanvas.Children.Add(line);
                                 ellipse.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = markerCount, isDraggable = true, pos1 = position, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = "Origin", totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 line.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = count, isDraggable = false, pos1 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = "Starting", totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
-                                (ellipse.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
-                                (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
+                                (ellipse.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
+                                (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
+                                (ellipse.Tag as RouteData).setfData(frdata);
+                                (line.Tag as RouteData).setfData(frdata);
                                 routewaypointDataBlock.Visibility = Visibility.Visible;
                                 updateValue(mode);
                                 Gmap.CaptureMouse();
@@ -558,7 +591,7 @@ namespace Mission_Assistant
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 ellipse.SetBinding(Ellipse.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 (line.Tag as RouteData).pos2 = position;
                                 (line.Tag as RouteData).objID = lineCount;
                                 (line.Tag as RouteData).componentID = lineCount;
@@ -605,7 +638,7 @@ namespace Mission_Assistant
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 ellipse.SetBinding(Ellipse.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 ellipse.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Line", componentID = markerCount, pos1 = position, pos2 = position, isDraggable = true };
                                 line.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Line", pos1 = position, isDraggable = false };
                                 line.SetBinding(Line.X1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
@@ -632,7 +665,7 @@ namespace Mission_Assistant
                             Panel.SetZIndex(ellipse, 5);
                             Canvas.SetLeft(ellipse, clickedPoint.X);
                             Canvas.SetTop(ellipse, clickedPoint.Y);
-                            ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                            ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                             ellipse.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Circle", objID = circleCount, componentID = circleCount, isDraggable = true, pos1 = position, pos2 = sizePoint };
                             drawCanvas.Children.Add(ellipse);
                             mode = "none";
@@ -663,7 +696,7 @@ namespace Mission_Assistant
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 ellipse.SetBinding(Ellipse.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 ellipse.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Polygon", objID = polygonCount, componentID = markerCount, isDraggable = true, pos1 = (line.Tag as RouteData).pos1, pos2 = position };
                                 line.SetBinding(Line.X2Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
                                 line.SetBinding(Line.Y2Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.TopProperty) });
@@ -723,7 +756,7 @@ namespace Mission_Assistant
                                 ellipse.SetBinding(Ellipse.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 ellipse.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 ellipse.SetBinding(Ellipse.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new CircleRadiusConverter() });
+                                ellipse.SetBinding(Ellipse.MarginProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.ActualWidthProperty), Converter = new EllipseMarginConverter() });
                                 ellipse.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Polygon", objID = polygonCount, componentID = markerCount, isDraggable = true, pos1 = position, pos2 = position };
                                 line.Tag = new RouteData(drawCanvas, "KM", "KM", "KPH", "KG", "PER KM") { objType = "Polygon", objID = polygonCount, componentID = count, isDraggable = false, pos1 = position };
                                 line.SetBinding(Line.X1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
@@ -775,10 +808,25 @@ namespace Mission_Assistant
                         line = temp;
                         (ellipse.Tag as RouteData).type = "Landing";
                         (line.Tag as RouteData).type = "Landing";
-                        updateValue(mode);
                         if (mode == "route")
                         {
-                            updateHeadingBoxInfo((ellipse.Tag as RouteData).objID);
+                            Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                            StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
+                            Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
+                            fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
+                            fuelcircle.RowDefinitions.Add(new RowDefinition());
+                            Grid.SetRow(bc, 0);
+                            Grid.SetColumn(bc, 0);
+                            Grid.SetRow(fval, 0);
+                            Grid.SetColumn(fval, 0);
+                            fuelcircle.Children.Add(bc);
+                            fuelcircle.Children.Add(fval);
+                            (fval.Children[0] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "rem2" });
+                            (fval.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "frcs2" });
+                            routeDataPanel.Children.Insert(0, fuelcircle);
+                            updateRouteDataInfo((ellipse.Tag as RouteData).objID);
                             lineProperties.Visibility = Visibility.Collapsed;
                             polygonProperties.Visibility = Visibility.Collapsed;
                             circleProperties.Visibility = Visibility.Collapsed;
@@ -792,6 +840,7 @@ namespace Mission_Assistant
                             lineProperties.Visibility = Visibility.Collapsed;
                             polygonProperties.Visibility = Visibility.Visible;
                         }
+                        updateValue(mode);
                         set = false;
                         drawn = false;
                         mode = "none";
@@ -834,7 +883,8 @@ namespace Mission_Assistant
             switch ((sender as Button).Name)
             {
                 case "mapBtn":
-                    bafChart.Visibility = Visibility.Visible;
+                    if (!bafChart.IsVisible) bafChart.Visibility = Visibility.Visible;
+                    else bafChart.Visibility = Visibility.Hidden;
                     break;
                 case "platformsBtn":
                     Platforms platform_editor = new Platforms();
@@ -909,6 +959,8 @@ namespace Mission_Assistant
                     break;
                 case "imgBtn":
                     //mode = "image";
+                    //Console.WriteLine((ellipse.Tag as RouteData).type);
+                    //Console.WriteLine((ellipse.Tag as RouteData).remfuel);
                     break;
                 case "surfaceBtn":
                     mode = "surface";
@@ -1027,10 +1079,25 @@ namespace Mission_Assistant
                     (ellipse.Tag as RouteData).type = "Landing";
                     (line.Tag as RouteData).type = "Landing";
                     Gmap.ReleaseMouseCapture();
-                    updateValue(mode);
                     if (mode == "route")
                     {
-                        updateHeadingBoxInfo((ellipse.Tag as RouteData).objID);
+                        Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                        StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
+                        Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
+                        fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
+                        fuelcircle.RowDefinitions.Add(new RowDefinition());
+                        Grid.SetRow(bc, 0);
+                        Grid.SetColumn(bc, 0);
+                        Grid.SetRow(fval, 0);
+                        Grid.SetColumn(fval, 0);
+                        fuelcircle.Children.Add(bc);
+                        fuelcircle.Children.Add(fval);
+                        (fval.Children[0] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "rem2" });
+                        (fval.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "frcs2" });
+                        routeDataPanel.Children.Insert(0, fuelcircle);
+                        updateRouteDataInfo((ellipse.Tag as RouteData).objID);
                         lineProperties.Visibility = Visibility.Collapsed;
                         polygonProperties.Visibility = Visibility.Collapsed;
                         circleProperties.Visibility = Visibility.Collapsed;
@@ -1044,6 +1111,7 @@ namespace Mission_Assistant
                         lineProperties.Visibility = Visibility.Collapsed;
                         polygonProperties.Visibility = Visibility.Visible;
                     }
+                    updateValue(mode);
                     set = false;
                     drawn = false;
                     mode = "none";
@@ -1056,6 +1124,7 @@ namespace Mission_Assistant
             }
             if (e.Key == Key.Delete && ellipse != null)
             {
+                draggable = false;
                 int num;
                 if ((ellipse.Tag as RouteData).objType == "Line")
                 {
@@ -1117,6 +1186,7 @@ namespace Mission_Assistant
                 }
                 else if ((ellipse.Tag as RouteData).objType == "Route")
                 {
+                    ellipse.Visibility = Visibility.Collapsed;
                     num = (ellipse.Tag as RouteData).objID;
                     for (int i = 0; i < drawCanvas.Children.Count; i++)
                     {
@@ -1357,23 +1427,23 @@ namespace Mission_Assistant
                     dmsLng = DataConverters.CoordinateUnits(dat.pos2.Lng, "DEGREE", "DMS");
                     routeAcNameBox.Text = pdata.performanceDatas[0].aircraft;
                     msnNameBox.Text = dat.mission;
-                    routeTotalDistanceBox.Text = DataConverters.LengthUnits(dat.totaldistance, baseunit.bdistUnit, dat.totaldistanceUnit).ToString();
+                    routeTotalDistanceBox.Text = Math.Round(DataConverters.LengthUnits(dat.totaldistance, baseunit.bdistUnit, dat.totaldistanceUnit), 3).ToString();
                     routeTotalTimeBox.Value = TimeSpan.FromSeconds(dat.totaltime);
-                    routeTotalFuelBox.Text = dat.totalfuel.ToString();
-                    routeStartingFuelBox.Text = dat.startingfuel.ToString();
-                    routeMinimaFuelBox.Text = dat.minima.ToString();
+                    routeTotalFuelBox.Text = Math.Round(dat.totalfuel, 3).ToString();
+                    routeStartingFuelBox.Text = Math.Round(dat.startingfuel, 3).ToString();
+                    routeMinimaFuelBox.Text = Math.Round(dat.minima, 3).ToString();
                     routeCoordBox.Text = String.Format($"{dmsLat[0]}°{dmsLat[1]}'{dmsLat[2]}\"N {dmsLng[0]}°{dmsLng[1]}'{dmsLng[2]}\"E");
                     routeNameBox.Text = dat.name;
                     routeTypeBox.Text = dat.type;
                     if (routeTypeBox.SelectedIndex == -1) routeTypeBox.IsEnabled = false;
                     else routeTypeBox.IsEnabled = true;
                     routeTrackBox.Text = dat.track.ToString();
-                    routeDistanceBox.Text = DataConverters.LengthUnits(dat.distance, baseunit.bdistUnit, dat.distanceUnit).ToString();
+                    routeDistanceBox.Text = Math.Round(DataConverters.LengthUnits(dat.distance, baseunit.bdistUnit, dat.distanceUnit), 3).ToString();
                     routeAltBox.SelectedValue = dat.alt;
                     routeSpeedBox.SelectedValue = dat.speed;
                     routeTimeBox.Value = TimeSpan.FromSeconds(dat.time);
-                    routeFuelBox.Text = dat.fuel.ToString();
-                    routeRefuelDefuelBox.Text = dat.rdfuel.ToString();
+                    routeFuelBox.Text = Math.Round(dat.fuel, 3).ToString();
+                    routeRefuelDefuelBox.Text = Math.Round(dat.rdfuel, 3).ToString();
                     routeTotalDistanceUnit.SelectedValue = dat.totaldistanceUnit;
                     routeTotalFuelUnit.Text = baseunit.bfuelUnit;
                     routeStartingFuelUnit.Text = baseunit.bfuelUnit;
@@ -1460,6 +1530,7 @@ namespace Mission_Assistant
 
         private void removeElement(object sender, RoutedEventArgs e)
         {
+            draggable = false;
             if (ellipse == null) return;
             int num;
             switch ((sender as Button).Name)
@@ -1520,6 +1591,7 @@ namespace Mission_Assistant
                     ellipse = null;
                     break;
                 case "removeRoute":
+                    ellipse.Visibility = Visibility.Collapsed;
                     num = (ellipse.Tag as RouteData).objID;
                     for (int i = 0; i < drawCanvas.Children.Count; i++)
                     {
@@ -1557,6 +1629,14 @@ namespace Mission_Assistant
             }
         }
 
+        private void partsCleanup (object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((sender as UIElement).Visibility == Visibility.Collapsed)
+            {
+                drawCanvas.Children.Remove(sender as UIElement);
+            }
+        }
+
         private void repositionPoints()
         {
             GPoint baf_anch = Gmap.FromLatLngToLocal(new PointLatLng(23.7250117359518, 90.50537109375));
@@ -1587,7 +1667,7 @@ namespace Mission_Assistant
             }
         }
 
-        public void loadAircraft(string name)
+        private void loadAircraft(string name)
         {
             adflag = true;
             for (int i = 0; i < pdatas.Count; i++)
@@ -1749,6 +1829,7 @@ namespace Mission_Assistant
                                         }
                                     }
                                 }
+                                updateRouteDataInfo(id);
                                 break;
                             case "routeNameBox":
                                 (ellipse.Tag as RouteData).name = routeNameBox.Text;
@@ -1765,6 +1846,7 @@ namespace Mission_Assistant
                                 else if (routeRefuelDefuelSelector.SelectedValue.ToString() == "Defuel") val = Convert.ToDouble($"-{routeRefuelDefuelBox.Text}");
                                 (ellipse.Tag as RouteData).rdfuel = val;
                                 if ((ellipse.Tag as RouteData).componentID != 0) (line.Tag as RouteData).rdfuel = val;
+                                updateRouteDataInfo(id);
                                 break;
                             default:
                                 return;
@@ -1804,6 +1886,7 @@ namespace Mission_Assistant
                                         }
                                     }
                                 }
+                                updateRouteDataInfo(id);
                                 break;
                             default:
                                 return;
@@ -1882,6 +1965,7 @@ namespace Mission_Assistant
                                         }
                                     }
                                     Keyboard.ClearFocus();
+                                    updateRouteDataInfo(id);
                                 }
                                 else numericFilter(sender, ee);
                                 break;
@@ -1900,6 +1984,7 @@ namespace Mission_Assistant
                                     {
                                         routeRefuelDefuelBox.Text = (ellipse.Tag as RouteData).rdfuel.ToString();
                                         Keyboard.ClearFocus();
+                                        updateRouteDataInfo(id);
                                         break;
                                     }
                                     double val = 0;
@@ -1908,6 +1993,7 @@ namespace Mission_Assistant
                                     (ellipse.Tag as RouteData).rdfuel = val;
                                     if ((ellipse.Tag as RouteData).componentID != 0) (line.Tag as RouteData).rdfuel = val;
                                     Keyboard.ClearFocus();
+                                    updateRouteDataInfo(id);
                                 }
                                 else numericFilter(sender, ee);
                                 break;
@@ -1953,6 +2039,7 @@ namespace Mission_Assistant
                                         }
                                     }
                                     Keyboard.ClearFocus();
+                                    updateRouteDataInfo(id);
                                 }
                                 else numericFilter(sender, ee);
                                 break;
@@ -2029,15 +2116,15 @@ namespace Mission_Assistant
                             dat.type = routeTypeBox.SelectedValue.ToString();
                             if (dat.componentID != 0) (line.Tag as RouteData).type = routeTypeBox.SelectedValue.ToString();
                             updateValue("route");
-                            updateHeadingBoxInfo(dat.objID);
+                            updateRouteDataInfo(dat.objID);
                             break;
                         case "routeAltBox":
                         case "routeSpeedBox":
                             if ((sender as ComboBox).SelectedIndex == -1) return;
-                            dat.setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
-                            if (dat.componentID != 0) (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, routeSpeedBox.SelectedIndex + 1);
+                            dat.setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
+                            if (dat.componentID != 0) (line.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
                             updateValue("route");
-                            updateHeadingBoxInfo(dat.objID);
+                            updateRouteDataInfo(dat.objID);
                             break;
                         case "routeStartingFuelBox":
                             if (routeStartingFuelBox.SelectedIndex == -1) return;
@@ -2065,6 +2152,7 @@ namespace Mission_Assistant
                                     }
                                 }
                             }
+                            updateRouteDataInfo(id);
                             break;
                         case "routeRefuelDefuelSelector":
                             routeRefuelDefuelBox.Focus();
@@ -2104,7 +2192,7 @@ namespace Mission_Assistant
             routeSpeedBox.Items.Refresh();
         }
 
-        private void updateHeadingBoxInfo(int oid)
+        private void updateRouteDataInfo(int oid)
         {
             for (int i = 0; i < drawCanvas.Children.Count; i++)
             {
@@ -2112,10 +2200,21 @@ namespace Mission_Assistant
                 {
                     if (((drawCanvas.Children[i] as StackPanel).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as StackPanel).Tag as RouteData).objID == oid)
                     {
-                        ((drawCanvas.Children[i] as StackPanel).Children[1] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
-                        ((drawCanvas.Children[i] as StackPanel).Children[2] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
-                        ((drawCanvas.Children[i] as StackPanel).Children[3] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
-                        ((drawCanvas.Children[i] as StackPanel).Children[4] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                        foreach (UIElement dtpnl in (drawCanvas.Children[i] as StackPanel).Children)
+                        {
+                            if (dtpnl is StackPanel)
+                            {
+                                ((dtpnl as StackPanel).Children[1] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                                ((dtpnl as StackPanel).Children[2] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                                ((dtpnl as StackPanel).Children[3] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                                ((dtpnl as StackPanel).Children[4] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                            }
+                            if (dtpnl is Grid)
+                            {
+                                (((dtpnl as Grid).Children[1] as StackPanel).Children[0] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                                (((dtpnl as Grid).Children[1] as StackPanel).Children[1] as Label).GetBindingExpression(Label.ContentProperty).UpdateTarget();
+                            }
+                        }         
                     }
                 }
             }
@@ -2137,11 +2236,11 @@ namespace Mission_Assistant
             else if ((e.Key < Key.D0 || e.Key > Key.D9) && (e.Key < Key.NumPad0 || e.Key > Key.NumPad9)) e.Handled = true;
         }
 
-        public void clearCache()
+        private void clearCache()
         {
             line = null;
             ellipse = null;
-            headingBox = null;
+            routeDataPanel = null;
             routeProperties.Visibility = Visibility.Collapsed;
             routeLineBlock.Visibility = Visibility.Collapsed;
             circleProperties.Visibility = Visibility.Collapsed;
