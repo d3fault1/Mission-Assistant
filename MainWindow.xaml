@@ -574,10 +574,14 @@
 
         <Rectangle Fill="Black" Opacity="0.5" Width="{Binding ElementName=btm}" Height="{Binding ElementName=btm}" Grid.Column="2" Grid.Row="4"/>
         <StackPanel x:Name="btm" Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Background="Transparent">
+            <TextBlock Text="Distance :" FontSize="14" Margin="0,5,0,5" TextAlignment="Center" Foreground="LightGray" Visibility="{Binding ElementName=dst, Path=Visibility}"/>
+            <TextBlock x:Name="dst" Width="50" Margin="5,5" FontSize="14" TextAlignment="Left" Foreground="LightGray" Visibility="Collapsed"/>
+            <TextBlock Text="Track :" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray" Visibility="{Binding ElementName=trk, Path=Visibility}"/>
+            <TextBlock x:Name="trk" Width="50" Margin="5,5" FontSize="14" TextAlignment="Left" Foreground="LightGray" Visibility="Collapsed"/>
             <TextBlock Text="Latitude :" FontSize="14" Margin="20,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
-            <TextBlock x:Name="pos_lat" Width="60" Margin="10,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
-            <TextBlock Text="Longitude :" FontSize="14" Margin="10,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
-            <TextBlock x:Name="pos_long" Width="60" Margin="10,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
+            <TextBlock x:Name="pos_lat" Width="70" Margin="5,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
+            <TextBlock Text="Longitude :" FontSize="14" Margin="0,5,0,5" TextAlignment="Center" Foreground="LightGray"/>
+            <TextBlock x:Name="pos_long" Width="70" Margin="5,5" FontSize="14" TextAlignment="Left" Foreground="LightGray"/>
         </StackPanel>
     </Grid>
 </Window>

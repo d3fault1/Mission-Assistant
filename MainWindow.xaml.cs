@@ -132,10 +132,23 @@ namespace Mission_Assistant
                 Canvas.SetLeft(ellipse, left + currentPoint.X - clickedPoint.X);
                 Canvas.SetTop(ellipse, top + currentPoint.Y - clickedPoint.Y);
             }
-            if (set)
+            else if (set)
             {
+                PointLatLng fPoint = Gmap.FromLocalToLatLng((int)clickedPoint.X, (int)clickedPoint.Y);
+                PointLatLng lPoint = Gmap.FromLocalToLatLng((int)currentPoint.X, (int)currentPoint.Y);
                 line.X2 = currentPoint.X;
                 line.Y2 = currentPoint.Y;
+                if (!dst.IsVisible) dst.Visibility = Visibility.Visible;
+                if (!trk.IsVisible) trk.Visibility = Visibility.Visible;
+                dst.Text = new MapRoute(new List<PointLatLng>() { fPoint , lPoint }, "U").Distance.ToString();
+                double tk = Math.Atan2(Math.Cos(lPoint.Lat * Math.PI / 180) * Math.Sin((lPoint.Lng - fPoint.Lng) * Math.PI / 180), Math.Cos(fPoint.Lat * Math.PI / 180) * Math.Sin(lPoint.Lat * Math.PI / 180) - Math.Sin(fPoint.Lat * Math.PI / 180) * Math.Cos(lPoint.Lat * Math.PI / 180) * Math.Cos((lPoint.Lng - fPoint.Lng) * Math.PI / 180)) * 180 / Math.PI;
+                if (tk < 0) tk += 360;
+                trk.Text = tk.ToString();
+            }
+            else if (!set)
+            {
+                if (dst.IsVisible) dst.Visibility = Visibility.Collapsed;
+                if (trk.IsVisible) trk.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -440,8 +453,8 @@ namespace Mission_Assistant
                                 routeDataPanel.SetBinding(StackPanel.MarginProperty, datapanelmargin);
                                 Ellipse bc = new Ellipse { Stroke = Brushes.Yellow, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                                 StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
                                 Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                                 fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                                 fuelcircle.RowDefinitions.Add(new RowDefinition());
@@ -451,12 +464,12 @@ namespace Mission_Assistant
                                 Grid.SetColumn(fval, 0);
                                 fuelcircle.Children.Add(bc);
                                 fuelcircle.Children.Add(fval);
-                                StackPanel headingBox = new StackPanel { Orientation = Orientation.Vertical, Height = 160, Background = Brushes.Transparent };
+                                StackPanel headingBox = new StackPanel { Orientation = Orientation.Vertical, Height = 180, Background = Brushes.Transparent };
                                 headingBox.Children.Add(new Path { Stroke = Brushes.Black, StrokeThickness = 3, Fill = Brushes.DarkRed, Data = PathGeometry.Parse("M1.5,1.5 L1.5,38.5 118.5,38.5 Z") });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 30, Foreground = Brushes.White, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 14 });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
                                 routeDataPanel.Children.Add(headingBox);
                                 routeDataPanel.Children.Add(fuelcircle);
                                 routeDataPanel.SetBinding(StackPanel.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty) });
@@ -812,8 +825,8 @@ namespace Mission_Assistant
                         {
                             Ellipse bc = new Ellipse { Stroke = Brushes.Yellow, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                             StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
                             Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                             fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                             fuelcircle.RowDefinitions.Add(new RowDefinition());
@@ -1083,8 +1096,8 @@ namespace Mission_Assistant
                     {
                         Ellipse bc = new Ellipse { Stroke = Brushes.Yellow, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                         StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Black, FontSize = 16, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Foreground = Brushes.Red, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 10, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 10), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
                         Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                         fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                         fuelcircle.RowDefinitions.Add(new RowDefinition());
