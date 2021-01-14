@@ -101,6 +101,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CheckpointData.cs" />
+    <Compile Include="ImageData.cs" />
     <Compile Include="MissionPicker.xaml.cs">
       <DependentUpon>MissionPicker.xaml</DependentUpon>
     </Compile>

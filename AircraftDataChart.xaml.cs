@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
@@ -32,10 +32,16 @@ namespace Mission_Assistant
             pdata = new PerformanceData();
             fsdata = new FuelStartData();
             frdata = new FuelReduceData();
+            performanceChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
+            performanceChart.Items.IsLiveSorting = true;
             performanceChart.DataContext = pdata;
             performanceChart.ItemsSource = pdata.performanceDatas;
+            startFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
+            startFuelChart.Items.IsLiveSorting = true;
             startFuelChart.DataContext = fsdata;
             startFuelChart.ItemsSource = fsdata.fuelStartDatas;
+            reductionFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
+            reductionFuelChart.Items.IsLiveSorting = true;
             reductionFuelChart.DataContext = frdata;
             reductionFuelChart.ItemsSource = frdata.fuelReduceDatas;
             if (!File.Exists(@".\test.db"))
@@ -290,6 +296,7 @@ namespace Mission_Assistant
                 conn.Execute($"INSERT INTO '{speedUnitTable}' ('Aircraft', 'Value', 'Unit') VALUES ('{aircraftName}', '{Convert.ToDouble(String.IsNullOrEmpty(dataspd4.Text) ? "0" : dataspd4.Text)}', '{fuel_units.SelectedValue.ToString()}')", new DynamicParameters());
                 conn.Execute($"INSERT INTO '{speedUnitTable}' ('Aircraft', 'Value', 'Unit') VALUES ('{aircraftName}', '{Convert.ToDouble(String.IsNullOrEmpty(dataspd5.Text) ? "0" : dataspd5.Text)}', '{lfft_units.SelectedValue.ToString()}')", new DynamicParameters());
             }
+            DialogResult = true;
             Close();
         }
     }

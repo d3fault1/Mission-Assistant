@@ -53,6 +53,26 @@ namespace Mission_Assistant
             }
         }
 
+        public PerformanceData Zero()
+        {
+            return new PerformanceData
+            {
+                alt = 0,
+                climbtime = 0,
+                climbdist = 0,
+                climbfuel = 0,
+                descendtime = 0,
+                descenddist = 0,
+                descendfuel = 0,
+                spd1 = 0,
+                spd2 = 0,
+                spd3 = 0,
+                spd4 = 0,
+                spd5 = 0,
+                aircraft = this.aircraft
+            };
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<PerformanceData> _performancedatas = new ObservableCollection<PerformanceData>();

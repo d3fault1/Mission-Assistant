@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.ComponentModel;
 
 namespace Mission_Assistant
 {
@@ -15,6 +16,7 @@ namespace Mission_Assistant
     public partial class Platforms : Window
     {
         bool dbOk = false;
+        bool isDataUpdated = false;
         public Platforms()
         {
             InitializeComponent();
@@ -32,6 +34,7 @@ namespace Mission_Assistant
                 case "modifyData":
                     AircraftDataChart editData = new AircraftDataChart(aircraftListbx.SelectedItems.OfType<string>().ToList(), "edit");
                     editData.ShowDialog();
+                    isDataUpdated = editData.DialogResult.Value;
                     break;
                 case "addData":
                     AircraftDataChart addData = new AircraftDataChart(aircraftListbx.Items.OfType<string>().ToList(), "add");
@@ -78,6 +81,11 @@ namespace Mission_Assistant
                 default:
                     return;
             }
+        }
+
+        private void onClosing(object sender, CancelEventArgs e)
+        {
+            DialogResult = isDataUpdated;
         }
     }
 }

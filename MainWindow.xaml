@@ -125,23 +125,39 @@
                             </StackPanel>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="headingOffsetScrl" Width="60" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
+                    <Button x:Name="headingOffsetXScrl" Width="70" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <Button x:Name="headingOffsetMinus" Width="15" Height="15" Background="Red" BorderBrush="White" Margin="5,0,0,0" Click="reduceElements">
+                                <Button x:Name="headingOffsetXMinus" Width="15" Height="15" Background="Red" BorderBrush="White" Margin="10,0,0,0" Click="reduceElements">
                                     <Image HorizontalAlignment="Center" VerticalAlignment="Center" Source="Assets\minus.png" Width="15" Height="15"/>
                                 </Button>
-                                <Button x:Name="headingOffsetPlus" Width="15" Height="15" Background="Green" Foreground="Black" BorderBrush="White" Margin="15,0,0,0" Click="increaseElements">
+                                <Button x:Name="headingOffsetXPlus" Width="15" Height="15" Background="Green" Foreground="Black" BorderBrush="White" Margin="15,0,0,0" Click="increaseElements">
                                     <Image HorizontalAlignment="Center" VerticalAlignment="Center" Source="Assets\plus.png" Width="15" Height="15"/>
                                 </Button>
                             </StackPanel>
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="Heading" HorizontalAlignment="Center" FontSize="13"/>
-                                <TextBlock Text="Box Offset" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Heading" HorizontalAlignment="Center" FontSize="11"/>
+                                <TextBlock Text="Box Offset (X)" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="fuelScrl" Width="60" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
+                    <Button x:Name="headingOffsetYScrl" Width="70" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <Button x:Name="headingOffsetYMinus" Width="15" Height="15" Background="Red" BorderBrush="White" Margin="10,0,0,0" Click="reduceElements">
+                                    <Image HorizontalAlignment="Center" VerticalAlignment="Center" Source="Assets\minus.png" Width="15" Height="15"/>
+                                </Button>
+                                <Button x:Name="headingOffsetYPlus" Width="15" Height="15" Background="Green" Foreground="Black" BorderBrush="White" Margin="15,0,0,0" Click="increaseElements">
+                                    <Image HorizontalAlignment="Center" VerticalAlignment="Center" Source="Assets\plus.png" Width="15" Height="15"/>
+                                </Button>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Heading" HorizontalAlignment="Center" FontSize="11"/>
+                                <TextBlock Text="Box Offset (Y)" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="fuelScrl" Width="65" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White">
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                 <Button x:Name="fuelMinus" Width="15" Height="15" Background="Red" BorderBrush="White" Margin="5,0,0,0" Click="reduceElements">
@@ -152,7 +168,7 @@
                                 </Button>
                             </StackPanel>
                             <StackPanel Orientation="Vertical">
-                                <TextBlock Text="Fuel Circle" HorizontalAlignment="Center" FontSize="12"/>
+                                <TextBlock Text="Fuel Circle" HorizontalAlignment="Center" FontSize="13"/>
                                 <TextBlock Text="Size" FontSize="13" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
@@ -172,6 +188,9 @@
                                 <TextBlock Text="Size" FontSize="13" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
+                    </Button>
+                    <Button x:Name="panelFlip" Width="60" Height="60" Margin="10,0,0,0" Background="White" BorderBrush="White" Click="mapDrawOperations">
+                        <TextBlock Text="Flip"/>
                     </Button>
                     <Line X1="20" X2="20" Y1="5" Y2="70" Stroke="Black" StrokeThickness="1"/>
                     <StackPanel Orientation="Vertical" Width="60" Height="60" Margin="20,0,0,0" Background="White">
@@ -306,8 +325,8 @@
 
             </TabItem>
         </TabControl>
-        <Canvas x:Name="drawCanvas" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="0" ClipToBounds="True" Background="Gray" MouseDown="drawOverlayMouseDown" MouseUp="drawOverlayMouseUp" MouseWheel="drawOverlayMouseWheel" MouseMove="drawOverlayMouseMove">
-            <gmaps:GMapControl x:Name="Gmap" CanDragMap="True" Canvas.Top="0" Canvas.Left="0" Panel.ZIndex="0" Width="{Binding ActualWidth, ElementName=drawCanvas}" Height="{Binding ActualHeight, ElementName=drawCanvas}" MouseEnter="GmapMouseEnter" MouseLeave="GmapMouseLeave" OnMapZoomChanged="GmapZoomChanged" OnMapDrag="GmapDrag"/>
+        <Canvas x:Name="drawCanvas" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="0" ClipToBounds="True" Background="Gray" MouseDown="drawOverlayMouseDown" MouseUp="drawOverlayMouseUp" MouseWheel="drawOverlayMouseWheel" MouseMove="drawOverlayMouseMove" MouseEnter="drawOverlayMouseEnter" MouseLeave="drawOverlayMouseLeave">
+            <gmaps:GMapControl x:Name="Gmap" CanDragMap="True" Canvas.Top="0" Canvas.Left="0" Panel.ZIndex="0" Width="{Binding ActualWidth, ElementName=drawCanvas}" Height="{Binding ActualHeight, ElementName=drawCanvas}" OnMapZoomChanged="GmapZoomChanged" OnMapDrag="GmapDrag"/>
         </Canvas>
 
 
@@ -443,8 +462,8 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Total Time" Foreground="White" FontSize="14"/>
-                    <xctk:TimeSpanUpDown x:Name="routeTotalTimeBox" ShowDays="False" ShowSeconds="True" ShowButtonSpinner="False" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="76,0,0,0"/>
-                    <TextBlock x:Name="routeTotalTimeUnit" Text="HMS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                    <TextBox x:Name="routeTotalTimeBox" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="76,0,0,0"/>
+                    <TextBlock x:Name="routeTotalTimeUnit" Text="MS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Total Fuel" Foreground="White" FontSize="14"/>
@@ -521,8 +540,8 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Time" Foreground="White" FontSize="14"/>
-                        <xctk:TimeSpanUpDown x:Name="routeTimeBox" ShowDays="False" ShowSeconds="True" ShowButtonSpinner="False" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="110,0,0,0"/>
-                        <TextBlock x:Name="routeTimeUnit" Text="HMS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                        <TextBox x:Name="routeTimeBox" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="110,0,0,0"/>
+                        <TextBlock x:Name="routeTimeUnit" Text="MS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Fuel" Foreground="White" FontSize="14"/>
@@ -538,7 +557,17 @@
                         <TextBlock x:Name="routeRefuelDefuelUnit" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
-                <Button x:Name="removeRoute" Content="Remove Route" HorizontalAlignment="Center" Margin="0,40,0,0" Click="removeElement"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,40,0,0">
+                    <Button x:Name="addcheckpoint" Content="Add Checkpoint" Margin="0,0,20,0" Click="mapDrawOperations"/>
+                    <Button x:Name="managecheckpoint" Content="Manage Checkpoint" Margin="0,0,0,0" Click="globalButtonOperations"/>
+                </StackPanel>
+                <StackPanel x:Name="checkpointssection" Orientation="Vertical" Margin="0,20,0,0" Visibility="Collapsed">
+                    <TextBlock Text="Available Checkpoints" Foreground="White" FontSize="14" Height="22" Margin="12,0,0,0"/>
+                    <ListBox x:Name="routecheckpoints" Height="80" Margin="10,0" DataContext="{Binding ElementName=main}" SelectionChanged="checkpointSelected"/>
+                    <Button x:Name="delcheck" Content="Delete Selected" HorizontalAlignment="Center" Margin="0,10,0,0" Click="globalButtonOperations"/>
+                </StackPanel>
+                <Button x:Name="diversionBtn" Content="Add Diversion Track" HorizontalAlignment="Center" Margin="0,20,0,0" Click="mapDrawOperations"/>
+                <Button x:Name="removeRoute" Content="Remove Route" HorizontalAlignment="Center" Margin="0,20,0,0" Click="removeElement"/>
             </StackPanel>
         </ScrollViewer>
 
@@ -570,6 +599,23 @@
                 </ComboBox>
             </StackPanel>
             <Button x:Name="removePolygon" Content="Remove Polygon" Width="120" Margin="0,50,0,0" Click="removeElement"/>
+        </StackPanel>
+
+        <StackPanel x:Name="imageProperties" Orientation="Vertical" HorizontalAlignment="Left" Background="#FF385623" Width="300" Grid.Column="2" Grid.Row="2" Grid.RowSpan="3" Panel.ZIndex="10" Visibility="Collapsed">
+            <TextBlock Text="Image Properties" FontSize="20" FontWeight="DemiBold" Foreground="LightYellow" FontStyle="Italic" Margin="15,10,10,30"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Image Width" Margin="20,10,0,0" FontSize="14" Foreground="White"/>
+                <TextBox x:Name="imageWidth" Margin="64,10,0,0" Width="80" Height="19" KeyDown="setValue"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Image Height" Margin="20,10,0,0" FontSize="14" Foreground="White"/>
+                <TextBox x:Name="imageHeight" Margin="60,10,0,0" Width="80" Height="19" KeyDown="setValue"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <CheckBox x:Name="imageKeepRatio" IsChecked="False" VerticalAlignment="Center" Margin="20,10,0,0" Checked="resizeImage"/>
+                <TextBlock Text="Keep Aspect Ratio" Margin="10,6,0,0" FontSize="14" Foreground="White"/>
+            </StackPanel>
+            <Button x:Name="removeImage" Content="Remove Image" Width="120" Margin="0,50,0,0" Click="removeElement"/>
         </StackPanel>
 
         <Rectangle Fill="Black" Opacity="0.5" Width="{Binding ElementName=btm}" Height="{Binding ElementName=btm}" Grid.Column="2" Grid.Row="4"/>

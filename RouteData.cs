@@ -1,6 +1,7 @@
 ﻿using GMap.NET;
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
@@ -14,20 +15,20 @@ namespace Mission_Assistant
         public string baseSpeedunit;
         public string baseLfftunit;
         private double sutto = 0;
-        private double climbtime = -1;
-        private double climbdist = -1;
-        private double climbfuel = -1;
-        private double descendtime = -1;
-        private double descenddist = -1;
-        private double descendfuel = -1;
-        private double prev_climbtime = -1;
-        private double prev_climbdist = -1;
-        private double prev_climbfuel = -1;
-        private double prev_descendtime = -1;
-        private double prev_descenddist = -1;
-        private double prev_descendfuel = -1;
-        private double prev_remfuel = -1;
-        private double prev_fuel = -1;
+        private double climbtime = 0;
+        private double climbdist = 0;
+        private double climbfuel = 0;
+        private double descendtime = 0;
+        private double descenddist = 0;
+        private double descendfuel = 0;
+        private double prev_climbtime = 0;
+        private double prev_climbdist = 0;
+        private double prev_climbfuel = 0;
+        private double prev_descendtime = 0;
+        private double prev_descenddist = 0;
+        private double prev_descendfuel = 0;
+        private double prev_remfuel = 0;
+        private double prev_fuel = 0;
         private double prev_alt = 0;
         private double next_frcsfuel = 0;
         private double _lfft = -1;
@@ -42,7 +43,8 @@ namespace Mission_Assistant
                 _lfft = value;
                 if (!pos1.IsEmpty && !pos2.IsEmpty)
                 {
-                    calcData();
+                    if (type == "Diversion") calcDiversionData();
+                    else calcData();
                 }
             }
         }
@@ -72,7 +74,11 @@ namespace Mission_Assistant
         public double landingrem = 0;
         public double frcsfuel = 0;
         public double landingfrcs = 0;
-        public float offset = 20;
+        public float offsetX = 20;
+        public float offsetY = 0;
+        public double checkpointconst = 0;
+        public double neffectivedst = 0;
+        public double effectivedst = 0;
         public bool isDraggable;
 
         private PointLatLng _pos1 = new PointLatLng();
@@ -92,7 +98,8 @@ namespace Mission_Assistant
                 _pos1 = value;
                 if (!_pos2.IsEmpty && lfft != -1)
                 {
-                    calcData();
+                    if (type == "Diversion") calcDiversionData();
+                    else calcData();
                 }
             }
         }
@@ -107,7 +114,8 @@ namespace Mission_Assistant
                 _pos2 = value;
                 if (!_pos1.IsEmpty && lfft != -1)
                 {
-                    calcData();
+                    if (type == "Diversion") calcDiversionData();
+                    else calcData();
                 }
             }
         }
@@ -122,7 +130,8 @@ namespace Mission_Assistant
                 _type = value;
                 if (!pos1.IsEmpty && !pos2.IsEmpty && lfft != -1)
                 {
-                    calcData();
+                    if (type == "Diversion") calcDiversionData();
+                    else calcData();
                 }
             }
         }
@@ -192,21 +201,70 @@ namespace Mission_Assistant
             if (type == "Starting")
             {
                 if (speed == 0) time = 0;
-                else time = climbtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                else if (distance < climbdist)
+                {
+                    time = 0;
+                }
+                else
+                {
+                    neffectivedst = DataConverters.LengthUnits(climbdist, baseDistunit, "KM");
+                    effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
+                    checkpointconst = climbtime - TimeSpan.FromHours(DataConverters.LengthUnits(climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    time = climbtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                }
             }
             else if (type == "Origin")
             {
                 time = 0;
             }
-            else if (type == "Landing")
+            else if (type == "Landing" || type == "Diversion")
             {
                 if (speed == 0) time = 0;
                 else
                 {
                     pullprevData();
-                    if (alt > prev_alt) time = (climbtime - prev_climbtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (climbdist - prev_climbdist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                    else if (alt < prev_alt) time = (prev_descendtime - descendtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (prev_descenddist - descenddist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                    else time = descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    if (alt > prev_alt)
+                    {
+                        if (distance < descenddist + (climbdist - prev_climbdist))
+                        {
+                            time = 0;
+                        }
+                        else
+                        {
+                            neffectivedst = DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM");
+                            effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
+                            checkpointconst = (climbtime - prev_climbtime) + descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist + (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            time = (climbtime - prev_climbtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (climbdist - prev_climbdist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        }
+                    }
+                    else if (alt < prev_alt)
+                    {
+                        if (distance < descenddist + (prev_descenddist - descenddist))
+                        {
+                            time = 0;
+                        }
+                        else
+                        {
+                            neffectivedst = DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM");
+                            effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
+                            checkpointconst = (prev_descendtime - descendtime) + descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist + (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            time = (prev_descendtime - descendtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (prev_descenddist - descenddist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        }
+                    }
+                    else
+                    {
+                        if (distance < descenddist)
+                        {
+                            time = 0;
+                        }
+                        else
+                        {
+                            neffectivedst = DataConverters.LengthUnits(0, baseDistunit, "KM");
+                            effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
+                            checkpointconst = descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            time = descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        }
+                    }
                 }
             }
             else
@@ -215,9 +273,41 @@ namespace Mission_Assistant
                 else
                 {
                     pullprevData();
-                    if (alt > prev_alt) time = (climbtime - prev_climbtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                    else if (alt < prev_alt) time = (prev_descendtime - descendtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                    else time = TimeSpan.FromHours(DataConverters.LengthUnits(distance, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    if (alt > prev_alt)
+                    {
+                        if (distance < climbdist - prev_climbdist)
+                        {
+                            time = 0;
+                        }
+                        else
+                        {
+                            neffectivedst = DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM");
+                            effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
+                            checkpointconst = (climbtime - prev_climbtime) - TimeSpan.FromHours(DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            time = (climbtime - prev_climbtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        }
+                    }
+                    else if (alt < prev_alt)
+                    {
+                        if (distance < prev_descenddist - descenddist)
+                        {
+                            time = 0;
+                        }
+                        else
+                        {
+                            neffectivedst = DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM");
+                            effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
+                            checkpointconst = (prev_descendtime - descendtime) - TimeSpan.FromHours(DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            time = (prev_descendtime - descendtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        }
+                    }
+                    else
+                    {
+                        neffectivedst = DataConverters.LengthUnits(0, baseDistunit, "KM");
+                        effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
+                        checkpointconst = 0;
+                        time = TimeSpan.FromHours(DataConverters.LengthUnits(distance, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    }
                 }
             }
         }
@@ -327,12 +417,32 @@ namespace Mission_Assistant
                 {
                     if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID)
                     {
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin" || ((parent.Children[i] as Ellipse).Tag as RouteData).type == "Diversion") continue;
                         ((parent.Children[i] as Ellipse).Tag as RouteData).distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { ((parent.Children[i] as Ellipse).Tag as RouteData).pos1, ((parent.Children[i] as Ellipse).Tag as RouteData).pos2 }, "L")).Distance, "KM", baseDistunit);
                         ((parent.Children[i] as Ellipse).Tag as RouteData).calcTime();
                         ((parent.Children[i] as Ellipse).Tag as RouteData).calcFuel();
                         totaldistance += ((parent.Children[i] as Ellipse).Tag as RouteData).distance;
                         totaltime += ((parent.Children[i] as Ellipse).Tag as RouteData).time;
                         totalfuel += ((parent.Children[i] as Ellipse).Tag as RouteData).fuel;
+                        foreach(UIElement cnv in parent.Children)
+                        {
+                            if (cnv is Canvas)
+                            {
+                                foreach(UIElement stp in (cnv as Canvas).Children)
+                                {
+                                    if (stp is StackPanel)
+                                    {
+                                        if ((stp as StackPanel).Tag is CheckpointData)
+                                        {
+                                            if (((stp as StackPanel).Tag as CheckpointData).routenum == ((parent.Children[i] as Ellipse).Tag as RouteData).objID && ((stp as StackPanel).Tag as CheckpointData).linenum == ((parent.Children[i] as Ellipse).Tag as RouteData).componentID - 1)
+                                            {
+                                                ((stp as StackPanel).Tag as CheckpointData).updateData();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         ((parent.Children[i] as Ellipse).Tag as RouteData).rev = true;
                     }
                 }
@@ -343,10 +453,10 @@ namespace Mission_Assistant
                 {
                     if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID)
                     {
-
                         ((parent.Children[i] as Ellipse).Tag as RouteData).totaldistance = totaldistance;
                         ((parent.Children[i] as Ellipse).Tag as RouteData).totaltime = totaltime;
                         ((parent.Children[i] as Ellipse).Tag as RouteData).totalfuel = totalfuel;
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin" || ((parent.Children[i] as Ellipse).Tag as RouteData).type == "Diversion") continue;
                         ((parent.Children[i] as Ellipse).Tag as RouteData).calcFuel();
                         ((parent.Children[i] as Ellipse).Tag as RouteData).rev = false;
                     }
@@ -354,8 +464,29 @@ namespace Mission_Assistant
             }
         }
 
+        private void calcDiversionData()
+        {
+            track = Math.Atan2(Math.Cos(pos2.Lat * Math.PI / 180) * Math.Sin((pos2.Lng - pos1.Lng) * Math.PI / 180), Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(pos2.Lat * Math.PI / 180) - Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(pos2.Lat * Math.PI / 180) * Math.Cos((pos2.Lng - pos1.Lng) * Math.PI / 180)) * 180 / Math.PI;
+            if (track < 0) track += 360;
+            distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { pos1, pos2 }, "L")).Distance, "KM", baseDistunit);
+            calcTime();
+        }
+
         public void setpData(PerformanceData pd, int index, double spd)
         {
+            speed = spd;
+            if (index == -1)
+            {
+                alt = pd.alt;
+                climbtime = pd.climbtime;
+                climbdist = pd.climbdist;
+                climbfuel = pd.climbfuel;
+                descenddist = pd.descenddist;
+                descendtime = pd.descendtime;
+                descendfuel = pd.descendfuel;
+                lfft = 0;
+                return;
+            }
             List<double> speeds = new List<double>() { pd.spd1, pd.spd2, pd.spd3, pd.spd4, pd.spd5 };
             int spid = 0;
             for (int i = 0; i < 5; i++)
@@ -366,7 +497,7 @@ namespace Mission_Assistant
                     break;
                 }
             }
-            speed = spd;
+            aircraft = pd.performanceDatas[index].aircraft;
             alt = pd.performanceDatas[index].alt;
             climbtime = pd.performanceDatas[index].climbtime;
             climbdist = pd.performanceDatas[index].climbdist;
@@ -416,6 +547,7 @@ namespace Mission_Assistant
                 {
                     if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData).componentID == componentID - 1)
                     {
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin") return;
                         RouteData prev = (parent.Children[i] as Ellipse).Tag as RouteData;
                         prev_alt = prev.alt;
                         prev_climbtime = prev.climbtime;
@@ -439,11 +571,13 @@ namespace Mission_Assistant
                 {
                     if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData).componentID == componentID + 1)
                     {
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin") return;
                         RouteData next = (parent.Children[i] as Ellipse).Tag as RouteData;
                         next_frcsfuel = next.frcsfuel;
                     }
                 }
             }
         }
+
     }
 }

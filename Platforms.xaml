@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mission_Assistant"
         mc:Ignorable="d"
-        Title="Platforms" Height="450" Width="800" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#FF375422">
+        Title="Platforms" Height="450" Width="800" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#FF375422" Closing="onClosing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
