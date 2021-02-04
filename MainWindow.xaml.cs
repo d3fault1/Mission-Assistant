@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using GMap.NET;
 using GMap.NET.MapProviders;
+using GMap.NET.WindowsPresentation;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -68,6 +69,18 @@ namespace Mission_Assistant
         public bool set = false, draggable = false, drawn = false, adflag;
         public int lineCount = -1, routeCount = -1, circleCount = -1, polygonCount = -1, markerCount = -1, boxCount = -1, imageCount = -1, count = 0;
         public double left, top;
+        public double mapZoom
+        {
+            get
+            {
+                return Gmap.Zoom;
+            }
+            set
+            {
+                Gmap.Zoom = value;
+                GmapZoomChanged();
+            }
+        }
         private const int minoffsetX = 5, maxoffsetX = 80, minoffsetY = -50, maxoffsetY = 50;
         private const double minThickness = 0.1, maxThickness = 30, minRadius = 0.1, maxRadius = 2000;
         public MainWindow()
@@ -91,7 +104,8 @@ namespace Mission_Assistant
             Gmap.MapProvider = GoogleHybridMapProvider.Instance;
             Gmap.DragButton = MouseButton.Left;
             Gmap.Position = new PointLatLng(23.777176, 90.399452);
-            Gmap.MinZoom = 1;
+            Gmap.ScaleMode = ScaleModes.Dynamic;
+            Gmap.MinZoom = 0;
             Gmap.MaxZoom = 20;
             Gmap.Zoom = 8;
             Gmap.ShowCenter = false;
@@ -259,14 +273,17 @@ namespace Mission_Assistant
                                 {
                                     for (int f = 0; f < (cv as Canvas).Children.Count; f++)
                                     {
-                                        if (((cv as Canvas).Children[f] as StackPanel).Tag is CheckpointData)
+                                        if ((cv as Canvas).Children[f] is StackPanel)
                                         {
-                                            if (!(((cv as Canvas).Children[f] as StackPanel).Tag as CheckpointData).isMark)
+                                            if (((cv as Canvas).Children[f] as StackPanel).Tag is CheckpointData)
                                             {
-                                                if ((cv as Canvas).Children[f].Visibility == Visibility.Hidden)
+                                                if (!(((cv as Canvas).Children[f] as StackPanel).Tag as CheckpointData).isMark)
                                                 {
-                                                    (cv as Canvas).Children.RemoveAt(f);
-                                                    f--;
+                                                    if ((cv as Canvas).Children[f].Visibility == Visibility.Hidden)
+                                                    {
+                                                        (cv as Canvas).Children.RemoveAt(f);
+                                                        f--;
+                                                    }
                                                 }
                                             }
                                         }
@@ -275,22 +292,27 @@ namespace Mission_Assistant
                             }
                             if (datlink.componentID == 0)
                             {
-                                datlink.pos1 = pos;
                                 datlink.pos2 = pos;
+                                if (datlink.type == "Diversion") goto skipBlock;
+                                datlink.pos1 = pos;
                                 for (int i = 0; i < drawCanvas.Children.Count; i++)
                                 {
                                     if (drawCanvas.Children[i] is Ellipse)
                                     {
-                                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == 1)
+                                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == 1 && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).type != "Diversion")
                                         {
                                             ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).pos1 = pos;
                                         }
                                     }
                                     else if (drawCanvas.Children[i] is Line)
                                     {
-                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == 0)
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == 0 && ((drawCanvas.Children[i] as Line).Tag as RouteData).type != "Diversion")
                                         {
                                             ((drawCanvas.Children[i] as Line).Tag as RouteData).pos1 = pos;
+                                        }
+                                        else if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                        {
+                                            ((drawCanvas.Children[i] as Line).Tag as RouteData).pos1 = (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse).Tag as RouteData).pos2;
                                         }
                                     }
                                 }
@@ -303,17 +325,16 @@ namespace Mission_Assistant
                                 {
                                     if (drawCanvas.Children[i] is Ellipse)
                                     {
-                                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == (datlink.componentID + 1))
+                                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == (datlink.componentID + 1) && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).type != "Diversion")
                                         {
                                             ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).pos1 = pos;
                                         }
                                     }
                                     else if (drawCanvas.Children[i] is Line)
                                     {
-                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID)
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).type != "Diversion")
                                         {
-                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion") continue;
-                                            else if (((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == (datlink.componentID - 1))
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == (datlink.componentID - 1))
                                             {
                                                 ((drawCanvas.Children[i] as Line).Tag as RouteData).pos2 = pos;
                                             }
@@ -321,7 +342,10 @@ namespace Mission_Assistant
                                             {
                                                 ((drawCanvas.Children[i] as Line).Tag as RouteData).pos1 = pos;
                                             }
-
+                                        }
+                                        else if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == datlink.objType && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == datlink.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                        {
+                                            ((drawCanvas.Children[i] as Line).Tag as RouteData).pos1 = (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse).Tag as RouteData).pos2;
                                         }
                                     }
                                 }
@@ -342,6 +366,7 @@ namespace Mission_Assistant
                                 routeLineBlock.Visibility = Visibility.Visible;
                                 routewaypointDataBlock.Visibility = Visibility.Visible;
                                 routeProperties.IsEnabled = true;
+                                showCheckpointList(line);
                             }
                             else if (datlink.objType == "Polygon")
                             {
@@ -574,26 +599,6 @@ namespace Mission_Assistant
                                 (line.Tag as RouteData).pos2 = position;
                                 var pos1 = (line.Tag as RouteData).pos1;
                                 var tp = (line.Tag as RouteData).type;
-                                Viewbox arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5) } };
-                                (arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                (arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
-                                arrow.SetBinding(Viewbox.VisibilityProperty, new Binding { Source = line, Path = new PropertyPath(Line.VisibilityProperty) });
-                                arrow.IsVisibleChanged += partsCleanup;
-                                arrow.RenderTransform = new RotateTransform();
-                                MultiBinding arrowX = new MultiBinding { Converter = new ArrowConverterXY() };
-                                arrowX.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
-                                arrowX.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
-                                arrow.SetBinding(Canvas.LeftProperty, arrowX);
-                                MultiBinding arrowY = new MultiBinding { Converter = new ArrowConverterXY() };
-                                arrowY.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
-                                arrowY.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                arrow.SetBinding(Canvas.TopProperty, arrowY);
-                                MultiBinding arrowθ = new MultiBinding { Converter = new ArrowConverterθ() };
-                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
-                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
-                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
-                                arrowθ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                BindingOperations.SetBinding(arrow.RenderTransform as RotateTransform, RotateTransform.AngleProperty, arrowθ);
                                 Canvas routeInfoContainer = new Canvas { IsHitTestVisible = false, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new RotateTransform() };
                                 StackPanel routeDataContainer = new StackPanel { Orientation = Orientation.Horizontal, RenderTransformOrigin = new Point(0, 0.5), RenderTransform = new ScaleTransform() };
                                 MultiBinding rHeight = new MultiBinding() { Converter = new DataPanelContainerHeightConverter() };
@@ -619,10 +624,16 @@ namespace Mission_Assistant
                                 datapanelmargin.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 datapanelmargin.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
                                 routeDataPanel.SetBinding(StackPanel.MarginProperty, datapanelmargin);
+                                Viewbox arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5), RenderTransform = new RotateTransform(-90) } };
+                                (arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                arrow.SetBinding(Canvas.LeftProperty, new Binding { Source = routeInfoContainer, Path = new PropertyPath(Canvas.WidthProperty), Converter = new MiddlePositionConverter() });
+                                arrow.SetBinding(Canvas.BottomProperty, new Binding { Source = routeInfoContainer, Path = new PropertyPath(Canvas.HeightProperty), Converter = new ArrowPositionConverter() });
+                                routeInfoContainer.Children.Add(arrow);
                                 Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                                 StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
                                 Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                                 fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                                 fuelcircle.RowDefinitions.Add(new RowDefinition());
@@ -634,10 +645,15 @@ namespace Mission_Assistant
                                 fuelcircle.Children.Add(fval);
                                 StackPanel headingBox = new StackPanel { Orientation = Orientation.Vertical, Width = 120, Height = 180, Background = Brushes.Transparent };
                                 headingBox.Children.Add(new Path { Stroke = Brushes.Black, StrokeThickness = 3, Fill = Brushes.DarkRed, Data = PathGeometry.Parse("M1.5,1.5 L1.5,38.5 118.5,38.5 Z"), RenderTransformOrigin = new Point(0.4685, 0.5), RenderTransform = new ScaleTransform() });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Red, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Red, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
-                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Red, Background = Brushes.DarkGray, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Red, Background = Brushes.DarkGray, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                headingBox.Children.Add(new Label { Width = 120, Height = 35, Foreground = Brushes.Black, Background = Brushes.DarkGray, BorderThickness = new Thickness(3, 0, 0, 3), FontSize = 16, FontWeight = FontWeights.Bold });
+                                (headingBox.Children[0] as Path).SetBinding(Path.StrokeProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (headingBox.Children[1] as Label).SetBinding(Label.BorderBrushProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (headingBox.Children[2] as Label).SetBinding(Label.BorderBrushProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (headingBox.Children[3] as Label).SetBinding(Label.BorderBrushProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
+                                (headingBox.Children[4] as Label).SetBinding(Label.BorderBrushProperty, new Binding { Source = line, Path = new PropertyPath(Line.StrokeProperty) });
                                 routeDataPanel.Children.Add(headingBox);
                                 routeDataPanel.Children.Add(fuelcircle);
                                 MultiBinding X = new MultiBinding { Converter = new HeadingBoxConverterX() };
@@ -645,16 +661,12 @@ namespace Mission_Assistant
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                //X.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
-                                //X.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
                                 routeInfoContainer.SetBinding(Canvas.LeftProperty, X);
                                 MultiBinding Y = new MultiBinding { Converter = new HeadingBoxConverterY() };
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y1Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X2Property) });
                                 Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.Y2Property) });
-                                //Y.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.TagProperty) });
-                                //Y.Bindings.Add(new Binding { Source = routeDataPanel, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
                                 routeInfoContainer.SetBinding(Canvas.TopProperty, Y);
                                 MultiBinding θ = new MultiBinding { Converter = new HeadingBoxConverterθ() };
                                 θ.Bindings.Add(new Binding { Source = line, Path = new PropertyPath(Line.X1Property) });
@@ -697,7 +709,6 @@ namespace Mission_Assistant
                                 drawCanvas.Children.Add(ellipse);
                                 drawCanvas.Children.Add(line);
                                 drawCanvas.Children.Add(routeInfoContainer);
-                                drawCanvas.Children.Add(arrow);
                                 ellipse.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = markerCount, isDraggable = true, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 line.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = count, isDraggable = false, pos1 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = "Enroute", totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
                                 routeDataContainer.Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, componentID = boxCount, isDraggable = false, pos1 = pos1, pos2 = position, startingfuel = Convert.ToDouble(routeStartingFuelBox.Text), type = tp, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit };
@@ -719,7 +730,9 @@ namespace Mission_Assistant
                                 _chkmark.SetBinding(Line.StrokeProperty, new Binding { Source = temp2, Path = new PropertyPath(Line.StrokeProperty) });
                                 _chkmark.SetBinding(Line.StrokeThicknessProperty, new Binding { Source = temp2, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 _checkpoint.Children.Add(_chkmark);
-                                _checkpoint.Children.Add(new Label { Content = "TOC", FontSize = 20, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform() });
+                                Label _chklabel = new Label { FontSize = 23, FontWeight = FontWeights.Bold, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform() };
+                                _chklabel.SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new CheckpointLabelConverter() });
+                                _checkpoint.Children.Add(_chklabel);
                                 MultiBinding _chkmargin = new MultiBinding { Converter = new CheckpointMarginConverter() };
                                 _chkmargin.Bindings.Add(new Binding { Source = _checkpoint, Path = new PropertyPath(StackPanel.ActualHeightProperty) });
                                 _chkmargin.Bindings.Add(new Binding { Source = _chkmark, Path = new PropertyPath(Line.X2Property) });
@@ -728,7 +741,7 @@ namespace Mission_Assistant
                                 _chkorigin.Bindings.Add(new Binding { Source = _chkmark, Path = new PropertyPath(Line.X2Property) });
                                 _chkorigin.Bindings.Add(new Binding { Source = _checkpoint, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
                                 _checkpoint.SetBinding(StackPanel.RenderTransformOriginProperty, _chkorigin);
-                                _checkpoint.Tag = new CheckpointData(temp2, ellipse, "TOC");
+                                _checkpoint.Tag = new CheckpointData(temp2, ellipse, "neff");
                                 (_checkpoint.Children[1] as Label).SetBinding(Label.ForegroundProperty, new Binding { Source = _chkmark, Path = new PropertyPath(Line.StrokeProperty) });
 
                                 _checkpoint.SetBinding(Canvas.LeftProperty, new Binding { Source = routeInfoContainer, Path = new PropertyPath(Canvas.ActualWidthProperty), Converter = new CheckpointXConverter() });
@@ -758,7 +771,8 @@ namespace Mission_Assistant
                                 _chkmark.SetBinding(Line.StrokeProperty, new Binding { Source = temp2, Path = new PropertyPath(Line.StrokeProperty) });
                                 _chkmark.SetBinding(Line.StrokeThicknessProperty, new Binding { Source = temp2, Path = new PropertyPath(Line.StrokeThicknessProperty) });
                                 _checkpoint.Children.Add(_chkmark);
-                                _checkpoint.Children.Add(new Label { Content = "TOD", FontSize = 20, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform() });
+                                _chklabel = new Label { Content = "TOD", FontSize = 23, FontWeight = FontWeights.Bold, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform() };
+                                _checkpoint.Children.Add(_chklabel);
                                 _chkmargin = new MultiBinding { Converter = new CheckpointMarginConverter() };
                                 _chkmargin.Bindings.Add(new Binding { Source = _checkpoint, Path = new PropertyPath(StackPanel.ActualHeightProperty) });
                                 _chkmargin.Bindings.Add(new Binding { Source = _chkmark, Path = new PropertyPath(Line.X2Property) });
@@ -767,7 +781,7 @@ namespace Mission_Assistant
                                 _chkorigin.Bindings.Add(new Binding { Source = _chkmark, Path = new PropertyPath(Line.X2Property) });
                                 _chkorigin.Bindings.Add(new Binding { Source = _checkpoint, Path = new PropertyPath(StackPanel.ActualWidthProperty) });
                                 _checkpoint.SetBinding(StackPanel.RenderTransformOriginProperty, _chkorigin);
-                                _checkpoint.Tag = new CheckpointData(temp2, ellipse, "TOD");
+                                _checkpoint.Tag = new CheckpointData(temp2, ellipse, "eff");
                                 (_checkpoint.Children[1] as Label).SetBinding(Label.ForegroundProperty, new Binding { Source = _chkmark, Path = new PropertyPath(Line.StrokeProperty) });
 
                                 _checkpoint.SetBinding(Canvas.LeftProperty, new Binding { Source = routeInfoContainer, Path = new PropertyPath(Canvas.ActualWidthProperty), Converter = new CheckpointXConverter() });
@@ -1168,7 +1182,6 @@ namespace Mission_Assistant
                                 Height = 20,
                                 Fill = Brushes.Transparent,
                                 Margin = new Thickness(-10),
-                                StrokeDashArray = new DoubleCollection { 3, 2 }
                             };
                             Canvas.SetLeft(ep, clickedPoint.X);
                             Canvas.SetTop(ep, clickedPoint.Y);
@@ -1180,26 +1193,6 @@ namespace Mission_Assistant
                             ep.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = lp, Path = new PropertyPath(Line.StrokeThicknessProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                             ep.SetBinding(Ellipse.VisibilityProperty, new Binding { Source = lp, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                             ep.IsVisibleChanged += partsCleanup;
-                            Viewbox _arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5) } };
-                            (_arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = lp, Path = new PropertyPath(Line.StrokeProperty) });
-                            (_arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = lp, Path = new PropertyPath(Line.StrokeProperty) });
-                            _arrow.SetBinding(Viewbox.VisibilityProperty, new Binding { Source = lp, Path = new PropertyPath(Line.VisibilityProperty) });
-                            _arrow.IsVisibleChanged += partsCleanup;
-                            _arrow.RenderTransform = new RotateTransform();
-                            MultiBinding _arrowX = new MultiBinding { Converter = new ArrowConverterXY() };
-                            _arrowX.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.X1Property) });
-                            _arrowX.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.X2Property) });
-                            _arrow.SetBinding(Canvas.LeftProperty, _arrowX);
-                            MultiBinding _arrowY = new MultiBinding { Converter = new ArrowConverterXY() };
-                            _arrowY.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.Y1Property) });
-                            _arrowY.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.Y2Property) });
-                            _arrow.SetBinding(Canvas.TopProperty, _arrowY);
-                            MultiBinding _arrowθ = new MultiBinding { Converter = new ArrowConverterθ() };
-                            _arrowθ.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.X1Property) });
-                            _arrowθ.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.Y1Property) });
-                            _arrowθ.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.X2Property) });
-                            _arrowθ.Bindings.Add(new Binding { Source = lp, Path = new PropertyPath(Line.Y2Property) });
-                            BindingOperations.SetBinding(_arrow.RenderTransform as RotateTransform, RotateTransform.AngleProperty, _arrowθ);
                             Canvas _routeInfoContainer = new Canvas { IsHitTestVisible = false, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new RotateTransform() };
                             StackPanel _routeDataContainer = new StackPanel { Orientation = Orientation.Horizontal, RenderTransformOrigin = new Point(0, 0.5), RenderTransform = new ScaleTransform() };
                             MultiBinding _rHeight = new MultiBinding() { Converter = new DataPanelContainerHeightConverter() };
@@ -1246,11 +1239,16 @@ namespace Mission_Assistant
                             _routeDataPanel.Children.Add(new Label { Height = 35, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = new ScaleTransform(), HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, Background = Brushes.DarkGray, FontSize = 16, FontWeight = FontWeights.Bold });
                             (_routeDataPanel.Children[0] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ep, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "track", UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
                             (_routeDataPanel.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ep, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "time", UpdateSourceTrigger = UpdateSourceTrigger.Explicit });
+                            Viewbox _arrow = new Viewbox { Child = new Path { Stroke = Brushes.Blue, StrokeThickness = 2, Data = PathGeometry.Parse(@"M20,5L0,0L5,5L0,10Z"), Fill = Brushes.Blue, Margin = new Thickness(-6, -5, -13, -5), RenderTransform = new RotateTransform(-90) } };
+                            (_arrow.Child as Path).SetBinding(Path.StrokeProperty, new Binding { Source = lp, Path = new PropertyPath(Line.StrokeProperty) });
+                            (_arrow.Child as Path).SetBinding(Path.FillProperty, new Binding { Source = lp, Path = new PropertyPath(Line.StrokeProperty) });
+                            _arrow.SetBinding(Canvas.LeftProperty, new Binding { Source = _routeInfoContainer, Path = new PropertyPath(Canvas.WidthProperty), Converter = new MiddlePositionConverter() });
+                            _arrow.SetBinding(Canvas.BottomProperty, new Binding { Source = _routeInfoContainer, Path = new PropertyPath(Canvas.HeightProperty), Converter = new ArrowPositionConverter() });
+                            _routeInfoContainer.Children.Add(_arrow);
                             (lp.Tag as RouteData).pos2 = position;
                             ep.Tag = lp.Tag;
                             _routeDataContainer.Tag = lp.Tag;
                             drawCanvas.Children.Add(ep);
-                            drawCanvas.Children.Add(_arrow);
                             drawCanvas.Children.Add(_routeInfoContainer);
                             mode = "none";
                             updateValue("route");
@@ -1300,6 +1298,10 @@ namespace Mission_Assistant
                         if (mode == "line") lineCount--;
                         else if (mode == "route") routeCount--;
                         else if (mode == "polygon") polygonCount--;
+                        else if (mode == "diversion")
+                        {
+                            drawCanvas.Children.RemoveAt(drawCanvas.Children.Count - 1);
+                        }
                         mode = "none";
                         drawCanvas.Cursor = Cursors.Arrow;
                     }
@@ -1325,10 +1327,10 @@ namespace Mission_Assistant
                         (line.Tag as RouteData).type = "Landing";
                         if (mode == "route")
                         {
-                            Ellipse bc = new Ellipse { Stroke = Brushes.Yellow, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                            Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                             StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                            fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
                             Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                             fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                             fuelcircle.RowDefinitions.Add(new RowDefinition());
@@ -1370,7 +1372,14 @@ namespace Mission_Assistant
 
         private void drawOverlayMouseWheel(object sender, MouseWheelEventArgs e)
         {
-
+            if (e.Delta > 0)
+            {
+                mapZoom += 0.2;
+            }
+            else if (e.Delta < 0)
+            {
+                mapZoom -= 0.2;
+            }
         }
 
         private void drawOverlayMouseEnter(object sender, MouseEventArgs e)
@@ -1397,12 +1406,13 @@ namespace Mission_Assistant
                         Y1 = Canvas.GetTop(ellipse),
                         X2 = currentPoint.X,
                         Y2 = currentPoint.Y,
+                        Stroke = Brushes.Red,
                         StrokeDashArray = new DoubleCollection() { 3, 2 },
-                        Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = routeCount, totaldistanceUnit = baseunit.bdistUnit, distanceUnit = baseunit.bdistUnit, isDraggable = true }
+                        Tag = new RouteData(drawCanvas, baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit) { objType = "Route", objID = (ellipse.Tag as RouteData).objID, totaldistanceUnit = (ellipse.Tag as RouteData).baseDistunit, distanceUnit = (ellipse.Tag as RouteData).baseDistunit, isDraggable = true }
                     };
                     (tp.Tag as RouteData).type = "Diversion";
                     (tp.Tag as RouteData).pos1 = (ellipse.Tag as RouteData).pos2;
-                    (tp.Tag as RouteData).componentID = (ellipse.Tag as RouteData).componentID + 1;
+                    (tp.Tag as RouteData).componentID = ((ellipse.Tag as RouteData).componentID * -1) - 1;
                     (tp.Tag as RouteData).setpData(pdata, routeAltBox.SelectedIndex, Convert.ToDouble(routeSpeedBox.SelectedValue));
                     (tp.Tag as RouteData).totaldistance = (ellipse.Tag as RouteData).totaldistance;
                     (tp.Tag as RouteData).totaltime = (ellipse.Tag as RouteData).totaltime;
@@ -1412,7 +1422,7 @@ namespace Mission_Assistant
                     (tp.Tag as RouteData).mission = (ellipse.Tag as RouteData).mission;
                     tp.SetBinding(Line.X1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.LeftProperty) });
                     tp.SetBinding(Line.Y1Property, new Binding { Source = ellipse, Path = new PropertyPath(Canvas.TopProperty) });
-                    tp.SetBinding(Line.StrokeProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.StrokeProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                    //tp.SetBinding(Line.StrokeProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.StrokeProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                     tp.SetBinding(Line.StrokeThicknessProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.StrokeThicknessProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                     tp.SetBinding(Line.VisibilityProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
                     drawCanvas.Children.Add(tp);
@@ -1551,8 +1561,16 @@ namespace Mission_Assistant
                     drawCanvas.Cursor = Cursors.Cross;
                     break;
                 case "surfaceBtn":
-                    //mode = "surface";
-                    MessageBox.Show(checkpoints.Count.ToString());
+                    //foreach (UIElement u in drawCanvas.Children)
+                    //{
+                    //    if (u is Ellipse)
+                    //    {
+                    //        if (((u as Ellipse).Tag as RouteData).objType == "Route" && ((u as Ellipse).Tag as RouteData).objID == (ellipse.Tag as RouteData).objID)
+                    //        {
+                    //            Console.WriteLine(((u as Ellipse).Tag as RouteData).componentID);
+                    //        }
+                    //    }
+                    //}
                     break;
                 case "addcheckpoint":
                     mode = "checkpoint";
@@ -1614,6 +1632,13 @@ namespace Mission_Assistant
             Button btn = (Button)sender;
             switch (btn.Name)
             {
+                case "thicknessPlus":
+                    if (line.StrokeThickness + 1 <= maxThickness)
+                    {
+                        line.StrokeThickness += 1;
+                        routeThickness.Text = line.StrokeThickness.ToString();
+                    }
+                    break;
                 case "waypntPlus":
                     break;
                 case "headingPlus":
@@ -1672,6 +1697,13 @@ namespace Mission_Assistant
             Button btn = (Button)sender;
             switch (btn.Name)
             {
+                case "thicknessMinus":
+                    if (line.StrokeThickness - 1 >= minThickness)
+                    {
+                        line.StrokeThickness -= 1;
+                        routeThickness.Text = line.StrokeThickness.ToString();
+                    }
+                    break;
                 case "waypntMinus":
                     break;
                 case "headingMinus":
@@ -1734,6 +1766,10 @@ namespace Mission_Assistant
                     if (mode == "line") lineCount--;
                     else if (mode == "route") routeCount--;
                     else if (mode == "polygon") polygonCount--;
+                    else if (mode == "diversion")
+                    {
+                        drawCanvas.Children.RemoveAt(drawCanvas.Children.Count - 1);
+                    }
                     mode = "none";
                     drawCanvas.Cursor = Cursors.Arrow;
                 }
@@ -1759,10 +1795,10 @@ namespace Mission_Assistant
                     (line.Tag as RouteData).type = "Landing";
                     if (mode == "route")
                     {
-                        Ellipse bc = new Ellipse { Stroke = Brushes.Yellow, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                        Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
                         StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
-                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 0, 0, 1) });
-                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Yellow, BorderThickness = new Thickness(0, 1, 0, 0) });
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                        fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
                         Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
                         fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
                         fuelcircle.RowDefinitions.Add(new RowDefinition());
@@ -1868,38 +1904,6 @@ namespace Mission_Assistant
                     else if ((ellipse.Tag as RouteData).objType == "Route")
                     {
                         ellipse.Visibility = Visibility.Collapsed;
-                        //num = (ellipse.Tag as RouteData).objID;
-                        //for (int i = 0; i < drawCanvas.Children.Count; i++)
-                        //{
-                        //    if (drawCanvas.Children[i] is Ellipse)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == num)
-                        //        {
-                        //            drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //            i--;
-                        //        }
-                        //    }
-                        //    else if (drawCanvas.Children[i] is Line)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == num)
-                        //        {
-                        //            drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //            i--;
-                        //        }
-                        //    }
-                        //    else if (drawCanvas.Children[i] is Canvas)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag is RouteData)
-                        //        {
-
-                        //            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == num)
-                        //            {
-                        //                drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //                i--;
-                        //            }
-                        //        }
-                        //    }
-                        //}
                         routeProperties.Visibility = Visibility.Collapsed;
                         clearCache();
                     }
@@ -2055,49 +2059,52 @@ namespace Mission_Assistant
         {
             foreach (UIElement f in panel.Children)
             {
-                if ((f as StackPanel).Tag is CheckpointData)
+                if (f is StackPanel)
                 {
-                    ((f as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
-                    (((f as StackPanel).Children[1] as Label).RenderTransform as ScaleTransform).ScaleX *= -1;
-                }
-                else
-                {
-                    ((f as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
-                    (((f as StackPanel).Children[0] as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
-                    if ((f as StackPanel).Tag is RouteData)
+                    if ((f as StackPanel).Tag is CheckpointData)
                     {
-                        if (((f as StackPanel).Tag as RouteData).type == "Diversion")
+                        ((f as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
+                        (((f as StackPanel).Children[1] as Label).RenderTransform as ScaleTransform).ScaleX *= -1;
+                    }
+                    else
+                    {
+                        ((f as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
+                        (((f as StackPanel).Children[0] as StackPanel).RenderTransform as ScaleTransform).ScaleX *= -1;
+                        if ((f as StackPanel).Tag is RouteData)
                         {
-                            return;
-                        }
-                        else
-                        {
-                            foreach (UIElement g in ((f as StackPanel).Children[0] as StackPanel).Children)
+                            if (((f as StackPanel).Tag as RouteData).type == "Diversion")
                             {
-                                if (g is StackPanel)
+                                return;
+                            }
+                            else
+                            {
+                                foreach (UIElement g in ((f as StackPanel).Children[0] as StackPanel).Children)
                                 {
-                                    (((g as StackPanel).Children[0] as Path).RenderTransform as ScaleTransform).ScaleX *= -1;
-                                    if ((((g as StackPanel).Children[0] as Path).RenderTransform as ScaleTransform).ScaleX < 0)
+                                    if (g is StackPanel)
                                     {
-                                        ((g as StackPanel).Children[1] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
-                                        ((g as StackPanel).Children[2] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
-                                        ((g as StackPanel).Children[3] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
-                                        ((g as StackPanel).Children[4] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
-                                        ((g as StackPanel).Children[1] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
-                                        ((g as StackPanel).Children[2] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
-                                        ((g as StackPanel).Children[3] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
-                                        ((g as StackPanel).Children[4] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
-                                    }
-                                    else
-                                    {
-                                        ((g as StackPanel).Children[1] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
-                                        ((g as StackPanel).Children[2] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
-                                        ((g as StackPanel).Children[3] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
-                                        ((g as StackPanel).Children[4] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
-                                        ((g as StackPanel).Children[1] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
-                                        ((g as StackPanel).Children[2] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
-                                        ((g as StackPanel).Children[3] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
-                                        ((g as StackPanel).Children[4] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
+                                        (((g as StackPanel).Children[0] as Path).RenderTransform as ScaleTransform).ScaleX *= -1;
+                                        if ((((g as StackPanel).Children[0] as Path).RenderTransform as ScaleTransform).ScaleX < 0)
+                                        {
+                                            ((g as StackPanel).Children[1] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
+                                            ((g as StackPanel).Children[2] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
+                                            ((g as StackPanel).Children[3] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
+                                            ((g as StackPanel).Children[4] as Label).BorderThickness = new Thickness(0, 0, 3, 3);
+                                            ((g as StackPanel).Children[1] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
+                                            ((g as StackPanel).Children[2] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
+                                            ((g as StackPanel).Children[3] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
+                                            ((g as StackPanel).Children[4] as Label).HorizontalContentAlignment = HorizontalAlignment.Right;
+                                        }
+                                        else
+                                        {
+                                            ((g as StackPanel).Children[1] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
+                                            ((g as StackPanel).Children[2] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
+                                            ((g as StackPanel).Children[3] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
+                                            ((g as StackPanel).Children[4] as Label).BorderThickness = new Thickness(3, 0, 0, 3);
+                                            ((g as StackPanel).Children[1] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
+                                            ((g as StackPanel).Children[2] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
+                                            ((g as StackPanel).Children[3] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
+                                            ((g as StackPanel).Children[4] as Label).HorizontalContentAlignment = HorizontalAlignment.Left;
+                                        }
                                     }
                                 }
                             }
@@ -2334,7 +2341,6 @@ namespace Mission_Assistant
                     routeAcNameBox.Text = pdata.performanceDatas[0].aircraft;
                     msnNameBox.Text = dat.mission;
                     routeTotalDistanceBox.Text = Math.Round(DataConverters.LengthUnits(dat.totaldistance, baseunit.bdistUnit, dat.totaldistanceUnit), 3).ToString();
-                    //routeTotalTimeBox.Value = TimeSpan.FromSeconds(dat.totaltime);
                     TimeSpan tot = TimeSpan.FromSeconds(dat.totaltime);
                     routeTotalTimeBox.Text = $"{(int)tot.TotalMinutes}'{tot.Seconds}\"";
                     routeTotalFuelBox.Text = Math.Round(dat.totalfuel, 3).ToString();
@@ -2349,7 +2355,6 @@ namespace Mission_Assistant
                     routeDistanceBox.Text = Math.Round(DataConverters.LengthUnits(dat.distance, baseunit.bdistUnit, dat.distanceUnit), 3).ToString();
                     routeAltBox.SelectedValue = dat.alt;
                     routeSpeedBox.SelectedValue = dat.speed;
-                    //routeTimeBox.Value = TimeSpan.FromSeconds(dat.time);
                     TimeSpan t = TimeSpan.FromSeconds(dat.time);
                     routeTimeBox.Text = $"{(int)t.TotalMinutes}'{t.Seconds}\"";
                     routeFuelBox.Text = Math.Round(dat.fuel, 3).ToString();
@@ -2508,39 +2513,390 @@ namespace Mission_Assistant
                         break;
                     case "removeRoute":
                         ellipse.Visibility = Visibility.Collapsed;
-                        //num = (ellipse.Tag as RouteData).objID;
-                        //for (int i = 0; i < drawCanvas.Children.Count; i++)
-                        //{
-                        //    if (drawCanvas.Children[i] is Ellipse)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == num)
-                        //        {
-                        //            drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //            i--;
-                        //        }
-                        //    }
-                        //    else if (drawCanvas.Children[i] is Line)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == num)
-                        //        {
-                        //            drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //            i--;
-                        //        }
-                        //    }
-                        //    else if (drawCanvas.Children[i] is Canvas)
-                        //    {
-                        //        if (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag is RouteData)
-                        //        {
-                        //            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == num)
-                        //            {
-                        //                drawCanvas.Children.Remove(drawCanvas.Children[i]);
-                        //                i--;
-                        //            }
-                        //        }
-                        //    }
-                        //}
                         routeProperties.Visibility = Visibility.Collapsed;
                         clearCache();
+                        break;
+                    case "removeLeg":
+                        if (ellipse.Tag is RouteData)
+                        {
+                            RouteData refs = ellipse.Tag as RouteData;
+                            Line prevl = null, nextl = null, marked = null;
+                            Ellipse preve = null, nexte = null;
+                            if ((ellipse.Tag as RouteData).type == "Origin")
+                            {
+                                nexte = pullNextEllipse(refs);
+                                nextl = pullNextLine(nexte.Tag as RouteData);
+                                Ellipse nextnexte = pullNextEllipse(nexte.Tag as RouteData);
+                                Line nextnextl = pullNextLine(nexte.Tag as RouteData);
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID == refs.componentID)
+                                            {
+                                                drawCanvas.Children.RemoveAt(i);
+                                                i--;
+                                            }
+                                            else if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (marked != null && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag == marked.Tag))
+                                                {
+                                                    drawCanvas.Children.RemoveAt(i);
+                                                }
+                                            }    
+                                        }
+                                    }
+                                    else if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse) == ellipse)
+                                                {
+                                                    Ellipse end = (drawCanvas.Children[i] as Line).GetBindingExpression(Line.X2Property).ParentBinding.Source as Ellipse;
+                                                    drawCanvas.Children.Remove(end);
+                                                    marked = drawCanvas.Children[i] as Line;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                drawCanvas.Children.Remove(ellipse);
+                                drawCanvas.Children.Remove(line);
+                                if (marked != null)
+                                {
+                                    drawCanvas.Children.Remove(marked);
+                                    marked = null;
+                                }
+                                if ((nexte.Tag as RouteData).type == "Landing")
+                                {
+                                    drawCanvas.Children.Remove(nexte);
+                                    clearCache();
+                                    return;
+                                }
+                                nextl.SetBinding(Line.X1Property, new Binding { Source = nexte, Path = new PropertyPath(Canvas.LeftProperty) });
+                                nextl.SetBinding(Line.Y1Property, new Binding { Source = nexte, Path = new PropertyPath(Canvas.TopProperty) });
+                                nexte.SetBinding(Ellipse.StrokeProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.StrokeProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nexte.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.StrokeThicknessProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nexte.SetBinding(Ellipse.VisibilityProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Ellipse)
+                                    {
+                                        if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == (nexte.Tag as RouteData).objID)
+                                            {
+                                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if ((drawCanvas.Children[i] as Line).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == (nexte.Tag as RouteData).objID)
+                                            {
+                                                ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == (nexte.Tag as RouteData).objID)
+                                        {
+                                            (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID--;
+                                        }
+                                    }
+                                }
+                                (nexte.Tag as RouteData).type = "Origin";
+                                if ((nextnexte.Tag as RouteData).type != "Landing")
+                                {
+                                    (nextnextl.Tag as RouteData).type = "Starting";
+                                    (nextnexte.Tag as RouteData).type = "Starting";
+                                }
+                                line = nextl;
+                                ellipse = nexte;
+                                updateValue("route");
+                                updateRouteDataInfo((nexte.Tag as RouteData).objID);
+                            }
+                            else if ((ellipse.Tag as RouteData).type == "Starting")
+                            {
+                                nextl = pullNextLine(refs);
+                                preve = pullPrevEllipse(refs);
+                                nexte = pullNextEllipse(refs);
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID == refs.componentID - 1)
+                                            {
+                                                drawCanvas.Children.RemoveAt(i);
+                                                i--;
+                                            }
+                                            else if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (marked != null && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag == marked.Tag))
+                                                {
+                                                    drawCanvas.Children.RemoveAt(i);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse) == ellipse)
+                                                {
+                                                    Ellipse end = (drawCanvas.Children[i] as Line).GetBindingExpression(Line.X2Property).ParentBinding.Source as Ellipse;
+                                                    drawCanvas.Children.Remove(end);
+                                                    marked = drawCanvas.Children[i] as Line;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                drawCanvas.Children.Remove(ellipse);
+                                drawCanvas.Children.Remove(line);
+                                if (marked != null)
+                                {
+                                    drawCanvas.Children.Remove(marked);
+                                    marked = null;
+                                }
+                                nextl.SetBinding(Line.X1Property, new Binding { Source = preve, Path = new PropertyPath(Canvas.LeftProperty) });
+                                nextl.SetBinding(Line.Y1Property, new Binding { Source = preve, Path = new PropertyPath(Canvas.TopProperty) });
+                                preve.SetBinding(Ellipse.StrokeProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.StrokeProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                preve.SetBinding(Ellipse.StrokeThicknessProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.StrokeThicknessProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                preve.SetBinding(Ellipse.VisibilityProperty, new Binding { Source = nextl, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Ellipse)
+                                    {
+                                        if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == (preve.Tag as RouteData).objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID > (preve.Tag as RouteData).componentID)
+                                            {
+                                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if ((drawCanvas.Children[i] as Line).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == (nextl.Tag as RouteData).objID)
+                                            {
+                                                ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == (nextl.Tag as RouteData).objID)
+                                        {
+                                            (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID--;
+                                        }
+                                    }
+                                }
+                                (nexte.Tag as RouteData).pos1 = Gmap.FromLocalToLatLng((int)Canvas.GetLeft(preve), (int)Canvas.GetTop(preve));
+                                if ((nexte.Tag as RouteData).type != "Landing")
+                                {
+                                    (nextl.Tag as RouteData).type = "Starting";
+                                    (nexte.Tag as RouteData).type = "Starting";
+                                }
+                                line = nextl;
+                                ellipse = nexte;
+                                updateValue("route");
+                                updateRouteDataInfo((nexte.Tag as RouteData).objID);
+                            }
+                            else if (((ellipse.Tag as RouteData).type == "Landing"))
+                            {
+                                prevl = pullPrevLine(refs);
+                                preve = pullPrevEllipse(refs);
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID == refs.componentID - 1)
+                                            {
+                                                drawCanvas.Children.RemoveAt(i);
+                                                i--;
+                                            }
+                                            else if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (marked != null && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag == marked.Tag))
+                                                {
+                                                    drawCanvas.Children.RemoveAt(i);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse) == ellipse)
+                                                {
+                                                    Ellipse end = (drawCanvas.Children[i] as Line).GetBindingExpression(Line.X2Property).ParentBinding.Source as Ellipse;
+                                                    drawCanvas.Children.Remove(end);
+                                                    marked = drawCanvas.Children[i] as Line;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                drawCanvas.Children.Remove(ellipse);
+                                drawCanvas.Children.Remove(line);
+                                if (marked != null)
+                                {
+                                    drawCanvas.Children.Remove(marked);
+                                    marked = null;
+                                }
+                                if ((preve.Tag as RouteData).type == "Origin")
+                                {
+                                    drawCanvas.Children.Remove(preve);
+                                    clearCache();
+                                    return;
+                                }
+                                (prevl.Tag as RouteData).type = "Landing";
+                                (preve.Tag as RouteData).type = "Landing";
+                                line = prevl;
+                                ellipse = preve;
+                                Ellipse bc = new Ellipse { Stroke = Brushes.Red, Fill = Brushes.DarkGray, StrokeThickness = 2 };
+                                StackPanel fval = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Black, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 5, 0, 0), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 0, 0, 1) });
+                                fval.Children.Add(new Label { HorizontalContentAlignment = HorizontalAlignment.Center, Foreground = Brushes.Red, FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5), BorderBrush = Brushes.Red, BorderThickness = new Thickness(0, 1, 0, 0) });
+                                Grid fuelcircle = new Grid() { Background = Brushes.Transparent, Width = 120, Height = 120, Margin = new Thickness(0, 20, 0, 0) };
+                                fuelcircle.ColumnDefinitions.Add(new ColumnDefinition());
+                                fuelcircle.RowDefinitions.Add(new RowDefinition());
+                                Grid.SetRow(bc, 0);
+                                Grid.SetColumn(bc, 0);
+                                Grid.SetRow(fval, 0);
+                                Grid.SetColumn(fval, 0);
+                                fuelcircle.Children.Add(bc);
+                                fuelcircle.Children.Add(fval);
+                                (fval.Children[0] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "rem2" });
+                                (fval.Children[1] as Label).SetBinding(Label.ContentProperty, new Binding { Source = ellipse, Path = new PropertyPath(Ellipse.TagProperty), Converter = new RouteInfoConverter(), ConverterParameter = "frcs2" });
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == (line.Tag as RouteData).objID && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID == (line.Tag as RouteData).componentID)
+                                        {
+                                            (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Children[0] as StackPanel).Children.Insert(0, fuelcircle);
+                                        }
+                                    }
+                                }
+                                updateValue("route");
+                                updateRouteDataInfo((prevl.Tag as RouteData).objID);
+                            }
+                            else
+                            {
+                                prevl = pullPrevLine(refs);
+                                nextl = pullNextLine(refs);
+                                preve = pullPrevEllipse(refs);
+                                nexte = pullNextEllipse(refs);
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID == refs.componentID - 1)
+                                            {
+                                                drawCanvas.Children.RemoveAt(i);
+                                                i--;
+                                            }
+                                            else if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (marked != null && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag == marked.Tag))
+                                                {
+                                                    drawCanvas.Children.RemoveAt(i);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).type == "Diversion")
+                                            {
+                                                if (((drawCanvas.Children[i] as Line).GetBindingExpression(Line.X1Property).ParentBinding.Source as Ellipse) == ellipse)
+                                                {
+                                                    Ellipse end = (drawCanvas.Children[i] as Line).GetBindingExpression(Line.X2Property).ParentBinding.Source as Ellipse;
+                                                    drawCanvas.Children.Remove(end);
+                                                    marked = drawCanvas.Children[i] as Line;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                drawCanvas.Children.Remove(ellipse);
+                                drawCanvas.Children.Remove(line);
+                                if (marked != null)
+                                {
+                                    drawCanvas.Children.Remove(marked);
+                                    marked = null;
+                                }
+                                nextl.SetBinding(Line.X1Property, new Binding { Source = preve, Path = new PropertyPath(Canvas.LeftProperty) });
+                                nextl.SetBinding(Line.Y1Property, new Binding { Source = preve, Path = new PropertyPath(Canvas.TopProperty) });
+                                nextl.SetBinding(Line.StrokeProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.StrokeThicknessProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeThicknessProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.StrokeStartLineCapProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeStartLineCapProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.StrokeEndLineCapProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeEndLineCapProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.StrokeDashCapProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeDashCapProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.StrokeDashArrayProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.StrokeDashArrayProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                nextl.SetBinding(Line.VisibilityProperty, new Binding { Source = prevl, Path = new PropertyPath(Line.VisibilityProperty), Mode = BindingMode.TwoWay, NotifyOnTargetUpdated = true });
+                                for (int i = 0; i < drawCanvas.Children.Count; i++)
+                                {
+                                    if (drawCanvas.Children[i] is Ellipse)
+                                    {
+                                        if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == (preve.Tag as RouteData).objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID > (preve.Tag as RouteData).componentID)
+                                            {
+                                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Line)
+                                    {
+                                        if ((drawCanvas.Children[i] as Line).Tag is RouteData)
+                                        {
+                                            if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == (prevl.Tag as RouteData).objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID > (prevl.Tag as RouteData).componentID)
+                                            {
+                                                ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID--;
+                                            }
+                                        }
+                                    }
+                                    if (drawCanvas.Children[i] is Canvas)
+                                    {
+                                        if ((((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objType == "Route" && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).objID == (prevl.Tag as RouteData).objID && (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID > (prevl.Tag as RouteData).componentID)
+                                        {
+                                            (((drawCanvas.Children[i] as Canvas).Children[0] as StackPanel).Tag as RouteData).componentID--;
+                                        }
+                                    }
+                                }
+                                (nexte.Tag as RouteData).pos1 = Gmap.FromLocalToLatLng((int)Canvas.GetLeft(preve), (int)Canvas.GetTop(preve));
+                                line = nextl;
+                                ellipse = nexte;
+                                updateValue("route");
+                                updateRouteDataInfo((prevl.Tag as RouteData).objID);
+                            }
+                        }
                         break;
                     default:
                         return;
@@ -2617,14 +2973,15 @@ namespace Mission_Assistant
             }
         }
 
-        private void loadAircraft(string name, bool reload = false)
+        private void loadAircraft(string name, string mode = "new")
         {
-            Console.WriteLine("Came Here!");
             adflag = true;
-            for (int i = 0; i < pdatas.Count; i++)
+            int i;
+            for (i = 0; i < pdatas.Count; i++)
             {
                 if (pdatas[i].performanceDatas[0].aircraft == name)
                 {
+                    if (mode == "reload") break;
                     pdata = pdatas[i];
                     fsdata = fsdatas[i];
                     frdata = frdatas[i];
@@ -2636,10 +2993,6 @@ namespace Mission_Assistant
             }
             if (adflag)
             {
-                if (reload)
-                {
-
-                }
                 pdata = new PerformanceData();
                 fsdata = new FuelStartData();
                 frdata = new FuelReduceData();
@@ -2675,11 +3028,22 @@ namespace Mission_Assistant
                     pdata.spd3 = Convert.ToDouble(datas[2].Value);
                     pdata.spd4 = Convert.ToDouble(datas[3].Value);
                     pdata.spd5 = Convert.ToDouble(datas[4].Value);
-                    pdatas.Add(pdata);
-                    fsdatas.Add(fsdata);
-                    frdatas.Add(frdata);
-                    baseunits.Add(baseunit);
-                    pdata.alt = pdatas.Count - 1;
+                    if (mode == "reload")
+                    {
+                        pdatas[i] = pdata;
+                        fsdatas[i] = fsdata;
+                        frdatas[i] = frdata;
+                        baseunits[i] = baseunit;
+                        pdata.alt = i;
+                    }
+                    else
+                    {
+                        pdatas.Add(pdata);
+                        fsdatas.Add(fsdata);
+                        frdatas.Add(frdata);
+                        baseunits.Add(baseunit);
+                        pdata.alt = pdatas.Count - 1;
+                    }
                 }
             }
             List<double> speeds = new List<double>();
@@ -2688,49 +3052,99 @@ namespace Mission_Assistant
             if (pdata.spd3 != 0) speeds.Add(pdata.spd3);
             if (pdata.spd4 != 0) speeds.Add(pdata.spd4);
             if (pdata.spd5 != 0) speeds.Add(pdata.spd5);
-            routeAcNameBox.Text = name;
-            routeAltBox.ItemsSource = pdata.performanceDatas.ToList();
-            routeStartingFuelBox.ItemsSource = fsdata.fuelStartDatas.ToList();
-            routeSpeedBox.ItemsSource = speeds;
-            routeAltBox.SelectedIndex = 0;
-            routeStartingFuelBox.SelectedIndex = 0;
-            routeSpeedBox.SelectedIndex = 0;
-            routeTypeBox.SelectedValue = "Enroute";
-            routeAltUnit.Text = baseunit.baltUnit;
-            routeTotalDistanceUnit.Text = baseunit.bdistUnit;
-            routeDistanceUnit.Text = baseunit.bdistUnit;
-            routeSpeedUnit.Text = baseunit.bspeedUnit;
-            routeFuelUnit.Text = baseunit.bfuelUnit;
-            routeTotalFuelUnit.Text = baseunit.bfuelUnit;
-            routeMinimaFuelUnit.Text = baseunit.bfuelUnit;
-            routeStartingFuelUnit.Text = baseunit.bfuelUnit;
-            routeRefuelDefuelUnit.Text = baseunit.bfuelUnit;
-            lineProperties.Visibility = Visibility.Collapsed;
-            polygonProperties.Visibility = Visibility.Collapsed;
-            circleProperties.Visibility = Visibility.Collapsed;
-            routeProperties.Visibility = Visibility.Visible;
-            routeLineBlock.Visibility = Visibility.Collapsed;
-            routewaypointDataBlock.Visibility = Visibility.Collapsed;
-            routeProperties.IsEnabled = false;
-            addwaypntBtn.IsEnabled = true;
+            if (mode == "new")
+            {
+                routeAcNameBox.Text = name;
+                routeAltBox.ItemsSource = pdata.performanceDatas.ToList();
+                routeStartingFuelBox.ItemsSource = fsdata.fuelStartDatas.ToList();
+                routeSpeedBox.ItemsSource = speeds;
+                routeAltBox.SelectedIndex = 0;
+                routeStartingFuelBox.SelectedIndex = 0;
+                routeSpeedBox.SelectedIndex = 0;
+                routeTypeBox.SelectedValue = "Enroute";
+                routeAltUnit.Text = baseunit.baltUnit;
+                routeTotalDistanceUnit.Text = baseunit.bdistUnit;
+                routeDistanceUnit.Text = baseunit.bdistUnit;
+                routeSpeedUnit.Text = baseunit.bspeedUnit;
+                routeFuelUnit.Text = baseunit.bfuelUnit;
+                routeTotalFuelUnit.Text = baseunit.bfuelUnit;
+                routeMinimaFuelUnit.Text = baseunit.bfuelUnit;
+                routeStartingFuelUnit.Text = baseunit.bfuelUnit;
+                routeRefuelDefuelUnit.Text = baseunit.bfuelUnit;
+                lineProperties.Visibility = Visibility.Collapsed;
+                polygonProperties.Visibility = Visibility.Collapsed;
+                circleProperties.Visibility = Visibility.Collapsed;
+                routeProperties.Visibility = Visibility.Visible;
+                routeLineBlock.Visibility = Visibility.Collapsed;
+                routewaypointDataBlock.Visibility = Visibility.Collapsed;
+                routeProperties.IsEnabled = false;
+                addwaypntBtn.IsEnabled = true;
+            }
         }
 
         private void updateAircraftRoute()
         {
-            //Console.WriteLine("Came Here!");
-            string done = "";
+            List<string> done = new List<string>();
+            bool found = false;
+            int indx = 0;
             for (int i = 0; i < drawCanvas.Children.Count; i++)
             {
                 if (drawCanvas.Children[i] is Ellipse)
                 {
                     if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
                     {
-                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).aircraft == done) continue;
-                        else
+                        foreach (string d in done)
                         {
-                            done = ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).aircraft;
-                            loadAircraft(done, true);
+                            if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).aircraft == d)
+                            {
+                                if (d != pdata.aircraft) loadAircraft(d, "refresh");
+                                for (int j = 0; j < pdata.performanceDatas.Count; j++)
+                                {
+                                    if (pdata.performanceDatas[j].alt == ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).alt)
+                                    {
+                                        indx = j;
+                                        break;
+                                    }
+                                }
+                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).setfData(frdata);
+                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).setpData(pdata, indx, ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).speed);
+                                ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).updateBaseUnits(baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit);
+                                found = true;
+                                break;
+                            }
+                            else found = false;
                         }
+                        if (!found)
+                        {
+                            done.Add(((drawCanvas.Children[i] as Ellipse).Tag as RouteData).aircraft);
+                            loadAircraft(done[done.Count - 1], "reload");
+                            for (int j = 0; j < pdata.performanceDatas.Count; j++)
+                            {
+                                if (pdata.performanceDatas[j].alt == ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).alt)
+                                {
+                                    indx = j;
+                                    break;
+                                }
+                            }
+                            ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).setfData(frdata);
+                            ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).setpData(pdata, indx, ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).speed);
+                            ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).updateBaseUnits(baseunit.baltUnit, baseunit.bdistUnit, baseunit.bspeedUnit, baseunit.bfuelUnit, baseunit.blfftUnit);
+                        }
+                    }
+                }
+            }
+            if (routeProperties.IsVisible)
+            {
+                refreshRoutePanel();
+                updateValue("route");
+            }
+            for (int i = 0; i < drawCanvas.Children.Count; i++)
+            {
+                if (drawCanvas.Children[i] is Ellipse)
+                {
+                    if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                    {
+                        updateRouteDataInfo(((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID);
                     }
                 }
             }
@@ -3192,6 +3606,18 @@ namespace Mission_Assistant
             routeStartingFuelBox.Items.Refresh();
             routeAltBox.Items.Refresh();
             routeSpeedBox.Items.Refresh();
+            routeStartingFuelBox.Text = (ellipse.Tag as RouteData).startingfuel.ToString();
+            routeAltBox.SelectedValue = (ellipse.Tag as RouteData).alt;
+            routeSpeedBox.SelectedIndex = routeSpeedBox.Items.IndexOf((ellipse.Tag as RouteData).speed);
+            routeAltUnit.Text = baseunit.baltUnit;
+            routeTotalDistanceUnit.Text = baseunit.bdistUnit;
+            routeDistanceUnit.Text = baseunit.bdistUnit;
+            routeSpeedUnit.Text = baseunit.bspeedUnit;
+            routeFuelUnit.Text = baseunit.bfuelUnit;
+            routeTotalFuelUnit.Text = baseunit.bfuelUnit;
+            routeMinimaFuelUnit.Text = baseunit.bfuelUnit;
+            routeStartingFuelUnit.Text = baseunit.bfuelUnit;
+            routeRefuelDefuelUnit.Text = baseunit.bfuelUnit;
         }
 
         private void updateRouteDataInfo(int oid)
@@ -3236,7 +3662,7 @@ namespace Mission_Assistant
                         {
                             if ((elm as StackPanel).Tag is CheckpointData)
                             {
-                                if (((elm as StackPanel).Tag as CheckpointData).isMark) ((elm as StackPanel).Tag as CheckpointData).updateData(((elm as StackPanel).Children[1] as Label).Content.ToString());
+                                if (((elm as StackPanel).Tag as CheckpointData).isMark) ((elm as StackPanel).Tag as CheckpointData).updateData(((elm as StackPanel).Tag as CheckpointData).mark);
                                 BindingExpression be = ((elm as StackPanel).Children[1] as Label).GetBindingExpression(Label.ContentProperty);
                                 MultiBindingExpression bf = BindingOperations.GetMultiBindingExpression(elm, Canvas.BottomProperty);
                                 MultiBindingExpression bg = BindingOperations.GetMultiBindingExpression(elm, Canvas.TopProperty);
@@ -3264,6 +3690,78 @@ namespace Mission_Assistant
                 }
             }
             else if ((e.Key < Key.D0 || e.Key > Key.D9) && (e.Key < Key.NumPad0 || e.Key > Key.NumPad9)) e.Handled = true;
+        }
+
+        private Line pullPrevLine(RouteData refs)
+        {
+            for (int i = 0; i < drawCanvas.Children.Count; i++)
+            {
+                if (drawCanvas.Children[i] is Line)
+                {
+                    if ((drawCanvas.Children[i] as Line).Tag is RouteData)
+                    {
+                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == refs.componentID - 2 && ((drawCanvas.Children[i] as Line).Tag as RouteData).type != "Diversion")
+                        {
+                            return drawCanvas.Children[i] as Line;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private Line pullNextLine(RouteData refs)
+        {
+            for (int i = 0; i < drawCanvas.Children.Count; i++)
+            {
+                if (drawCanvas.Children[i] is Line)
+                {
+                    if ((drawCanvas.Children[i] as Line).Tag is RouteData)
+                    {
+                        if (((drawCanvas.Children[i] as Line).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Line).Tag as RouteData).objID == refs.objID && ((drawCanvas.Children[i] as Line).Tag as RouteData).componentID == refs.componentID && ((drawCanvas.Children[i] as Line).Tag as RouteData).type != "Diversion")
+                        {
+                            return drawCanvas.Children[i] as Line;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private Ellipse pullPrevEllipse(RouteData refs)
+        {
+            for (int i = 0; i < drawCanvas.Children.Count; i++)
+            {
+                if (drawCanvas.Children[i] is Ellipse)
+                {
+                    if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                    {
+                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == refs.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == refs.componentID - 1 && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).type != "Diversion")
+                        {
+                            return drawCanvas.Children[i] as Ellipse;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        private Ellipse pullNextEllipse(RouteData refs)
+        {
+            for (int i = 0; i < drawCanvas.Children.Count; i++)
+            {
+                if (drawCanvas.Children[i] is Ellipse)
+                {
+                    if ((drawCanvas.Children[i] as Ellipse).Tag is RouteData)
+                    {
+                        if (((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objType == "Route" && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).objID == refs.objID && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).componentID == refs.componentID + 1 && ((drawCanvas.Children[i] as Ellipse).Tag as RouteData).type != "Diversion")
+                        {
+                            return drawCanvas.Children[i] as Ellipse;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         private void clearCache()

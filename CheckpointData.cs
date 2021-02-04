@@ -21,6 +21,7 @@ namespace Mission_Assistant
         public int checkpointnum = -1;
         public double distance = 0;
         public double time = 0;
+        public string mark = "";
         public bool isMark = false;
 
         public CheckpointData(GMapControl map, Line ml, Ellipse node, Point setPoint)
@@ -41,8 +42,9 @@ namespace Mission_Assistant
             parentData = node.Tag as RouteData;
             routenum = parentData.objID;
             linenum = (ml.Tag as RouteData).componentID;
-            if (mark == "TOC") distance = parentData.neffectivedst;
-            else if (mark == "TOD") distance = DataConverters.LengthUnits(parentData.distance, parentData.baseDistunit, "KM") - parentData.effectivedst;
+            if (mark == "neff") distance = parentData.neffectivedst;
+            else if (mark == "eff") distance = DataConverters.LengthUnits(parentData.distance, parentData.baseDistunit, "KM") - parentData.effectivedst;
+            this.mark = mark;
         }
 
         private void pullData()
@@ -68,13 +70,13 @@ namespace Mission_Assistant
 
         public void updateData(string mark)
         {
-            if (mark == "TOC")
+            if (mark == "neff")
             {
                 double temp = parentData.neffectivedst;
                 if (temp < 0) return;
                 else distance = temp;
             }
-            else if (mark == "TOD")
+            else if (mark == "eff")
             {
                 double temp = DataConverters.LengthUnits(parentData.distance, parentData.baseDistunit, "KM") - parentData.effectivedst;
                 if (temp < 0) return;

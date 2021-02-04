@@ -18,9 +18,6 @@ namespace Mission_Assistant
             double Y1 = (double)values[1];
             double X2 = (double)values[2];
             double Y2 = (double)values[3];
-            //double offset = (values[4] as RouteData).offset;
-            //double width = (double)values[5];
-            //return ((X1 + X2) / 2) + (width / 2 + offset) * Math.Cos((Math.PI / 180) * 90 + Math.Atan2((Y2 - Y1), (X2 - X1)));
             return (X1 + X2) / 2;
         }
 
@@ -38,9 +35,6 @@ namespace Mission_Assistant
             double Y1 = (double)values[1];
             double X2 = (double)values[2];
             double Y2 = (double)values[3];
-            //double offset = (values[4] as RouteData).offset;
-            //double width = (double)values[5];
-            //return ((Y1 + Y2) / 2) + (width / 2 + offset) * Math.Sin((Math.PI / 180) * 90 + Math.Atan2((Y2 - Y1), (X2 - X1)));
             return (Y1 + Y2) / 2;
         }
 
@@ -67,33 +61,15 @@ namespace Mission_Assistant
         }
     }
 
-    class ArrowConverterXY : IMultiValueConverter
+    class ArrowPositionConverter : IValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            double XY1 = (double)values[0];
-            double XY2 = (double)values[1];
-            return XY1 + ((XY2 - XY1) * 4 / 5);
+            double length = System.Convert.ToDouble(value);
+            return length * 4 / 5;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    class ArrowConverterθ : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            double X1 = (double)values[0];
-            double Y1 = (double)values[1];
-            double X2 = (double)values[2];
-            double Y2 = (double)values[3];
-            return Math.Atan2((Y2 - Y1), (X2 - X1)) * 180 / Math.PI;
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -165,7 +141,6 @@ namespace Mission_Assistant
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             double height = System.Convert.ToDouble(value);
-            //return new Thickness(-(width / 2), -(height / 2), -(width / 2), -(height / 2));
             return new Thickness(0, -(height / 2), 0, -(height / 2));
         }
 
@@ -262,19 +237,18 @@ namespace Mission_Assistant
                     TimeSpan ts = TimeSpan.FromSeconds(info.time);
                     if (ts == null || ts == TimeSpan.Zero) return String.Format($"N/A");
                     return String.Format($"{(int)ts.TotalMinutes}'{ts.Seconds}\"");
-                    //return String.Format($"{ts.Hours.ToString().PadLeft(2, '0')}:{ts.Minutes.ToString().PadLeft(2, '0')}:{ts.Seconds.ToString().PadLeft(2, '0')}");
                 case "fuel":
-                    return String.Format($"{Math.Round(info.fuel, 3)} {info.baseFuelunit}");
+                    return String.Format($"{Math.Round(info.fuel, 0)} {info.baseFuelunit}");
                 case "alt":
                     return String.Format($"{Math.Round(info.alt, 2)} {info.baseAltunit}");
                 case "rem":
-                    return Math.Round(info.remfuel, 3);
+                    return Math.Round(info.remfuel, 0);
                 case "frcs":
-                    return Math.Round(info.frcsfuel, 3);
+                    return Math.Round(info.frcsfuel, 0);
                 case "rem2":
-                    return Math.Round(info.landingrem, 3);
+                    return Math.Round(info.landingrem, 0);
                 case "frcs2":
-                    return Math.Round(info.landingfrcs, 3);
+                    return Math.Round(info.landingfrcs, 0);
             }
             return String.Empty;
         }
@@ -317,87 +291,31 @@ namespace Mission_Assistant
 
     }
 
-    //class CheckpointPositionConverter : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        double height = System.Convert.ToDouble(value);
-    //        //double pos = System.Convert.ToDouble(parameter);
-    //        double dist = (parameter as CheckpointData).distance;
-    //        return height - dist;
-    //    }
-
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
-
-    //class CheckpointRotateAngleConverter : IMultiValueConverter
-    //{
-    //    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        double X1 = System.Convert.ToDouble(values[0]);
-    //        double Y1 = System.Convert.ToDouble(values[1]);
-    //        double X2 = System.Convert.ToDouble(values[2]);
-    //        double Y2 = System.Convert.ToDouble(values[3]);
-    //        double lineang = Math.Atan2(Y2 - Y1, X2 - X1);
-    //        return lineang * 180 / Math.PI + 90;
-    //    }
-
-    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //}
-
-    //class CheckpointConverterX : IMultiValueConverter
-    //{
-    //    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        GMapControl map = parameter as GMapControl;
-    //        double R = 6378.1;
-    //        double X1 = System.Convert.ToDouble(values[0]);
-    //        double Y1 = System.Convert.ToDouble(values[1]);
-    //        double X2 = System.Convert.ToDouble(values[2]);
-    //        double Y2 = System.Convert.ToDouble(values[3]);
-    //        double d = (values[4] as CheckpointData).distance;
-    //        PointLatLng pos1 = map.FromLocalToLatLng((int)X1, (int)Y1);
-    //        PointLatLng pos2 = map.FromLocalToLatLng((int)X2, (int)Y2);
-    //        double track = Math.Atan2(Math.Cos(pos2.Lat * Math.PI / 180) * Math.Sin((pos2.Lng - pos1.Lng) * Math.PI / 180), Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(pos2.Lat * Math.PI / 180) - Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(pos2.Lat * Math.PI / 180) * Math.Cos((pos2.Lng - pos1.Lng) * Math.PI / 180));
-    //        double lat2 = Math.Asin(Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(d / R) + Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(d/R) * Math.Cos(track)) * 180 / Math.PI;
-    //        double lng2 = pos1.Lng + Math.Atan2(Math.Sin(track) * Math.Sin(d/R) * Math.Cos(pos1.Lat * Math.PI / 180), Math.Cos(d/R) - (Math.Sin(pos1.Lat * Math.PI / 180) * Math.Sin(lat2 * Math.PI / 180))) * 180 / Math.PI;
-    //        return System.Convert.ToDouble(map.FromLatLngToLocal(new PointLatLng(lat2, lng2)).X);
-    //    }
-
-    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //}
-
     class CheckpointPositionConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             GMapControl map = parameter as GMapControl;
-            double R = 6378.1;
-            double X1 = System.Convert.ToDouble(values[0]);
-            double Y1 = System.Convert.ToDouble(values[1]);
-            double X2 = System.Convert.ToDouble(values[2]);
-            double Y2 = System.Convert.ToDouble(values[3]);
+            //double X1 = System.Convert.ToDouble(values[0]);
+            //double Y1 = System.Convert.ToDouble(values[1]);
+            //double X2 = System.Convert.ToDouble(values[2]);
+            //double Y2 = System.Convert.ToDouble(values[3]);
             double d = (values[4] as CheckpointData).distance;
-            PointLatLng pos1 = map.FromLocalToLatLng((int)X1, (int)Y1);
-            PointLatLng pos2 = map.FromLocalToLatLng((int)X2, (int)Y2);
-            double track = Math.Atan2(Math.Cos(pos2.Lat * Math.PI / 180) * Math.Sin((pos2.Lng - pos1.Lng) * Math.PI / 180), Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(pos2.Lat * Math.PI / 180) - Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(pos2.Lat * Math.PI / 180) * Math.Cos((pos2.Lng - pos1.Lng) * Math.PI / 180));
-            double lat2 = Math.Asin(Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(d / R) + Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(d / R) * Math.Cos(track)) * 180 / Math.PI;
-            double lng2 = pos1.Lng + Math.Atan2(Math.Sin(track) * Math.Sin(d / R) * Math.Cos(pos1.Lat * Math.PI / 180), Math.Cos(d / R) - (Math.Sin(pos1.Lat * Math.PI / 180) * Math.Sin(lat2 * Math.PI / 180))) * 180 / Math.PI;
-            GPoint temp = map.FromLatLngToLocal(new PointLatLng(lat2, lng2));
-            Point local1 = new Point(X1, Y1);
-            Point local2 = new Point((int)temp.X, (int)temp.Y);
-            return Math.Sqrt(Math.Pow(local2.X - local1.X, 2) + Math.Pow(local2.Y - local1.Y, 2));
+            //PointLatLng pos1 = map.FromLocalToLatLng((int)X1, (int)Y1);
+            //PointLatLng pos2 = map.FromLocalToLatLng((int)X2, (int)Y2);
+            //double R = 6378.1;
+            //double track = Math.Atan2(Math.Cos(pos2.Lat * Math.PI / 180) * Math.Sin((pos2.Lng - pos1.Lng) * Math.PI / 180), Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(pos2.Lat * Math.PI / 180) - Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(pos2.Lat * Math.PI / 180) * Math.Cos((pos2.Lng - pos1.Lng) * Math.PI / 180));
+            //double lat2 = Math.Asin(Math.Sin(pos1.Lat * Math.PI / 180) * Math.Cos(d / R) + Math.Cos(pos1.Lat * Math.PI / 180) * Math.Sin(d / R) * Math.Cos(track)) * 180 / Math.PI;
+            //double lng2 = pos1.Lng + Math.Atan2(Math.Sin(track) * Math.Sin(d / R) * Math.Cos(pos1.Lat * Math.PI / 180), Math.Cos(d / R) - (Math.Sin(pos1.Lat * Math.PI / 180) * Math.Sin(lat2 * Math.PI / 180))) * 180 / Math.PI;
+            //GPoint temp = map.FromLatLngToLocal(new PointLatLng(lat2, lng2));
+            //Point local1 = new Point(X1, Y1);
+            //Point local2 = new Point((int)temp.X, (int)temp.Y);
+            //return Math.Sqrt(Math.Pow(local2.X - local1.X, 2) + Math.Pow(local2.Y - local1.Y, 2));
+            PointLatLng pnt1 = map.FromLocalToLatLng(0, 20);
+            PointLatLng pnt2 = map.FromLocalToLatLng(200, 20);
+            double dist = new MapRoute(new List<PointLatLng>() { pnt1, pnt2 }, "B").Distance;
+            double factor = 200 / dist;
+            return d * factor;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -437,11 +355,28 @@ namespace Mission_Assistant
 
     }
 
+    class CheckpointLabelConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            RouteData data = value as RouteData;
+            if (data.transition == "climb") return @"TOC";
+            else if (data.transition == "descend") return @"BOD";
+            else return "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+
     class OutOfBoundConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (parameter == "Checkpoint")
+            if (parameter.ToString() == "Checkpoint")
             {
                 double pos = System.Convert.ToDouble(values[0]);
                 double height = System.Convert.ToDouble(values[1]);

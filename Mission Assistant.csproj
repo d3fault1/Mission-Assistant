@@ -107,6 +107,7 @@
       <DependentUpon>MissionPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="RouteData.cs" />
+    <Compile Include="SaveLoadAndExport.cs" />
     <Page Include="AircraftDataChart.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
