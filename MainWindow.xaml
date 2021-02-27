@@ -400,7 +400,7 @@
             <StackPanel Orientation="Vertical" Background="#FF385623" Width="300">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Aircraft" Foreground="White" FontSize="14" Margin="10,10,0,0"/>
-                    <TextBox x:Name="routeAcNameBox" IsHitTestVisible="False" IsReadOnly="True" Foreground="White" Background="Transparent" BorderBrush="White" BorderThickness="2" Width="135" Height="22" Margin="92,12,0,0"/>
+                    <TextBox x:Name="routeAcNameBox" IsReadOnly="True" IsReadOnlyCaretVisible="False" CaretBrush="White" Foreground="White" Background="Transparent" BorderBrush="White" BorderThickness="2" Width="135" Height="22" Margin="92,12,0,0"/>
                 </StackPanel>
                 <StackPanel x:Name="routeLineBlock" Orientation="Vertical">
                     <Grid>
@@ -415,7 +415,7 @@
                     </Grid>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Thickness" Margin="8,10" FontSize="14" Foreground="White"/>
-                        <TextBox x:Name="routeThickness" Foreground="White" Margin="35,0,0,0" Width="78" Background="Transparent" BorderBrush="White" Height="22" BorderThickness="1" KeyDown="setValue"/>
+                        <TextBox x:Name="routeThickness" CaretBrush="White" IsReadOnlyCaretVisible="False" Foreground="White" Margin="35,0,0,0" Width="78" Background="Transparent" BorderBrush="White" Height="22" BorderThickness="1" KeyDown="setValue"/>
                         <Button x:Name="thicknessMinus" Margin="40,0,0,1" Width="20" Height="20" VerticalAlignment="Center" Click="reduceElements">
                             <TextBlock Text="-" FontWeight="SemiBold" FontSize="20" Margin="0,-8,0,0"/>
                         </Button>
@@ -458,11 +458,11 @@
                 </Grid>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="MSN#" Foreground="White" FontSize="14"/>
-                    <TextBox x:Name="msnNameBox" Width="133" Height="22" Background="Transparent" BorderThickness="1" BorderBrush="White" Margin="100,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                    <TextBox x:Name="msnNameBox" Width="133" Height="22" CaretBrush="White" IsReadOnlyCaretVisible="False" Foreground="White" Background="Transparent" BorderThickness="1" BorderBrush="White" Margin="100,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Total Distance" Foreground="White" FontSize="14"/>
-                    <TextBox x:Name="routeTotalDistanceBox" IsHitTestVisible="False" IsReadOnly="True" Background="Transparent" BorderBrush="Gray" Width="60" Height="22" BorderThickness="1" Foreground="White" Margin="53,0,0,0"/>
+                    <TextBox x:Name="routeTotalDistanceBox" IsReadOnly="True" CaretBrush="White" IsReadOnlyCaretVisible="False" Background="Transparent" BorderBrush="Gray" Width="60" Height="22" BorderThickness="1" Foreground="White" Margin="53,0,0,0"/>
                     <ComboBox x:Name="routeTotalDistanceUnit" SelectedValuePath="Content" SelectedValue="{Binding ElementName=routeDistanceUnit, Path=SelectedValue, Mode=TwoWay, NotifyOnTargetUpdated=True}" Width="56" Height="22" Margin="17,0,0,0" SelectionChanged="updateRouteData">
                         <ComboBoxItem Content="KM"/>
                         <ComboBoxItem Content="NM"/>
@@ -470,12 +470,12 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Total Time" Foreground="White" FontSize="14"/>
-                    <TextBox x:Name="routeTotalTimeBox" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="76,0,0,0"/>
-                    <TextBlock x:Name="routeTotalTimeUnit" Text="MS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                    <TextBox x:Name="routeTotalTimeBox" TextAlignment="Left" IsReadOnly="True" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="76,0,0,0"/>
+                    <TextBlock x:Name="routeTotalTimeUnit" Text="MM:SS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Total Fuel" Foreground="White" FontSize="14"/>
-                    <TextBox x:Name="routeTotalFuelBox" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="80,0,0,0"/>
+                    <TextBox x:Name="routeTotalFuelBox" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="80,0,0,0"/>
                     <TextBlock x:Name="routeTotalFuelUnit" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
@@ -495,7 +495,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                     <TextBlock Text="Minima" Foreground="White" FontSize="14"/>
-                    <TextBox x:Name="routeMinimaFuelBox" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="93,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                    <TextBox x:Name="routeMinimaFuelBox" Width="60" Height="22" CaretBrush="White" IsReadOnlyCaretVisible="False" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="93,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
                     <TextBlock x:Name="routeMinimaFuelUnit" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                 </StackPanel>
                 <StackPanel x:Name="routewaypointDataBlock" Orientation="Vertical">
@@ -511,30 +511,95 @@
                     </Grid>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Coordinates" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeCoordBox" IsHitTestVisible="False" IsReadOnly="True" Width="133" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="64,0,0,0"/>
+                        <Path x:Name="coordinpbtn" Data="M0,0 L0,8 6,4Z" Stroke="White" StrokeThickness="0.5" VerticalAlignment="Center" Margin="53,0,0,0" RenderTransformOrigin="0.33,0.5" MouseLeftButtonDown="expand">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                            <Setter Property="Fill" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        <TextBox x:Name="routeCoordBox" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="133" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" TextChanged="manageDetails"/>
+                    </StackPanel>
+                    <StackPanel x:Name="coordinput" Orientation="Vertical" Margin="147,10,0,0" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="Ncoorddeg" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="0,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="°" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBox x:Name="Ncoordmin" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="&apos;" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBox x:Name="Ncoordsec" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="&quot;" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBlock Text="N" Foreground="White" FontSize="12" Margin="10,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBox x:Name="Ecoorddeg" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="0,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="°" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBox x:Name="Ecoordmin" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="&apos;" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBox x:Name="Ecoordsec" CaretBrush="White" IsReadOnlyCaretVisible="False" Width="25" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                            <TextBlock Text="&quot;" Foreground="White" FontSize="14" Margin="2,0,0,0"/>
+                            <TextBlock Text="E" Foreground="White" FontSize="15" Margin="10,0,0,0"/>
+                        </StackPanel>
+                        <Button x:Name="updatecoord" Content="Update" Width="70" HorizontalAlignment="Left" Margin="15,10,0,5" Click="mapDrawOperations"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Name" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeNameBox" Width="133" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="102,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                        <TextBox x:Name="routeNameBox" Width="133" Height="22" CaretBrush="White" IsReadOnlyCaretVisible="False" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="102,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Type" Foreground="White" FontSize="14"/>
-                        <ComboBox x:Name="routeTypeBox" IsEditable="True" IsReadOnly="True" Width="133" Height="22" SelectedValuePath="Content" Background="Transparent" Margin="111,0,0,0" SelectionChanged="updateRouteData">
+                        <ComboBox x:Name="routeTypeBox" IsEditable="True" IsReadOnly="True" Width="133" Height="22" SelectedValuePath="Content" Background="Transparent" Margin="110,0,0,0" SelectionChanged="updateRouteData">
                             <ComboBoxItem Content="Enroute"/>
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Track" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeTrackBox" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="108,0,0,0"/>
+                        <TextBox x:Name="routeTrackBox" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="107,0,0,0"/>
                         <TextBlock x:Name="routeTrackUnit" Text="Deg" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Distance" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeDistanceBox" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="87,0,0,0"/>
+                        <Path x:Name="distdetbtn" Data="M0,0 L0,8 6,4Z" Stroke="White" StrokeThickness="0.5" VerticalAlignment="Center" Margin="75,0,0,0" RenderTransformOrigin="0.33,0.5" MouseLeftButtonDown="expand">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                            <Setter Property="Fill" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        <TextBox x:Name="routeDistanceBox" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" TextChanged="manageDetails"/>
                         <ComboBox x:Name="routeDistanceUnit" SelectedValuePath="Content" Width="56" Height="22" Margin="17,0,0,0" SelectionChanged="updateRouteData">
                             <ComboBoxItem Content="KM"/>
                             <ComboBoxItem Content="NM"/>
                         </ComboBox>
+                    </StackPanel>
+                    <StackPanel x:Name="distancedetails" Orientation="Vertical" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Climb/Descend" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="cddist" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="17,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Level" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lvldist" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="80,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Landing" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lnddist" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="62,0,0,0"/>
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Alt" Foreground="White" FontSize="14"/>
@@ -548,31 +613,89 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Time" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeTimeBox" TextAlignment="Left" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="110,0,0,0"/>
-                        <TextBlock x:Name="routeTimeUnit" Text="MS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                        <Path x:Name="timedetbtn" Data="M0,0 L0,8 6,4Z" Stroke="White" StrokeThickness="0.5" VerticalAlignment="Center" Margin="99,0,0,0" RenderTransformOrigin="0.33,0.5" MouseLeftButtonDown="expand">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                            <Setter Property="Fill" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        <TextBox x:Name="routeTimeBox" TextAlignment="Left" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" TextChanged="manageDetails"/>
+                        <TextBlock x:Name="routeTimeUnit" Text="MM:SS" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel x:Name="timedetails" Orientation="Vertical" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Climb/Descend" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="cdtime" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="17,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Level" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lvltime" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="80,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Landing" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lndtime" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="62,0,0,0"/>
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <TextBlock Text="Fuel" Foreground="White" FontSize="14"/>
-                        <TextBox x:Name="routeFuelBox" IsHitTestVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="115,0,0,0"/>
+                        <Path x:Name="fueldetbtn" Data="M0,0 L0,8 6,4Z" Stroke="White" StrokeThickness="0.5" VerticalAlignment="Center" Margin="104,0,0,0" RenderTransformOrigin="0.33,0.5" MouseLeftButtonDown="expand">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="Transparent"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                            <Setter Property="Fill" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        <TextBox x:Name="routeFuelBox" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="5,0,0,0" TextChanged="manageDetails"/>
                         <TextBlock x:Name="routeFuelUnit" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel x:Name="fueldetails" Orientation="Vertical" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Climb/Descend" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="cdfuel" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="17,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Level" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lvlfuel" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="80,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
+                            <TextBlock Text="Landing" Foreground="White" FontSize="14" Margin="30,0,0,0"/>
+                            <TextBox x:Name="lndfuel" CaretBrush="White" IsReadOnlyCaretVisible="False" IsReadOnly="True" Text="N/A" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="62,0,0,0"/>
+                        </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="8,10,0,0">
                         <ComboBox x:Name="routeRefuelDefuelSelector" Width="84" Height="22" SelectedIndex="0" SelectedValuePath="Content" SelectionChanged="updateRouteData">
                             <ComboBoxItem Content="Refuel"/>
                             <ComboBoxItem Content="Defuel"/>
                         </ComboBox>
-                        <TextBox x:Name="routeRefuelDefuelBox" Width="60" Height="22" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="56,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
+                        <TextBox x:Name="routeRefuelDefuelBox" Width="60" Height="22" CaretBrush="White" IsReadOnlyCaretVisible="False" BorderBrush="Gray" BorderThickness="1" Background="Transparent" Foreground="White" Margin="56,0,0,0" KeyDown="updateRouteData" LostFocus="updateRouteData"/>
                         <TextBlock x:Name="routeRefuelDefuelUnit" Foreground="White" FontSize="14" Width="56" Height="22" Margin="17,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,40,0,0">
                     <Button x:Name="addcheckpoint" Content="Add Checkpoint" Width="100" Margin="0,0,20,0" Click="mapDrawOperations"/>
-                    <Button x:Name="managecheckpoint" Content="Manage Checkpoint" Width="120" Margin="0,0,0,0" Click="globalButtonOperations"/>
+                    <Button x:Name="managecheckpoint" Content="Manage Checkpoint" Width="120" Margin="0,0,0,0" Click="mapDrawOperations"/>
                 </StackPanel>
                 <StackPanel x:Name="checkpointssection" Orientation="Vertical" Margin="0,20,0,0" Visibility="Collapsed">
                     <TextBlock Text="Available Checkpoints" Foreground="White" FontSize="14" Height="22" Margin="12,0,0,0"/>
                     <ListBox x:Name="routecheckpoints" Height="80" Margin="10,0" DataContext="{Binding ElementName=main}" SelectionChanged="checkpointSelected"/>
-                    <Button x:Name="delcheck" Content="Delete Selected" HorizontalAlignment="Center" Margin="0,10,0,0" Click="globalButtonOperations"/>
+                    <Button x:Name="delcheck" Content="Delete Selected" HorizontalAlignment="Center" Margin="0,10,0,0" Click="mapDrawOperations"/>
                 </StackPanel>
                 <Button x:Name="diversionBtn" Content="Add Diversion Track" Width="130" HorizontalAlignment="Center" Margin="0,20,0,0" Click="mapDrawOperations"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">

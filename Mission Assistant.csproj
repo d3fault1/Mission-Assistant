@@ -106,6 +106,9 @@
     <Compile Include="MissionPicker.xaml.cs">
       <DependentUpon>MissionPicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ReferencePoints.xaml.cs">
+      <DependentUpon>ReferencePoints.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RouteData.cs" />
     <Compile Include="SaveLoadAndExport.cs" />
     <Page Include="AircraftDataChart.xaml">
@@ -134,6 +137,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Platforms.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ReferencePoints.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -70,11 +70,18 @@ namespace Mission_Assistant
         public double track = 0;
         public double time = 0;
         public double fuel = 0;
+        public double lvldistance = 0;
+        public double lvltime = 0;
+        public double lvlfuel = 0;
+        public double tocbodtime = 0;
+        public double landingtime = 0;
+        public double tocbodfuel = 0;
+        public double landingfuel = 0;
         public double remfuel = 0;
         public double landingrem = 0;
         public double frcsfuel = 0;
         public double landingfrcs = 0;
-        public float offsetX = 20;
+        public float offsetX = 80;
         public float offsetY = 0;
         public double checkpointconst = 0;
         public double neffectivedst = 0;
@@ -212,7 +219,10 @@ namespace Mission_Assistant
                     neffectivedst = DataConverters.LengthUnits(climbdist, baseDistunit, "KM");
                     effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
                     checkpointconst = climbtime - TimeSpan.FromHours(DataConverters.LengthUnits(climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                    time = climbtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                    tocbodtime = climbtime;
+                    landingtime = 0;
+                    time = tocbodtime + lvltime + landingtime;
                 }
             }
             else if (type == "Origin")
@@ -234,7 +244,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(climbdist, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
                             checkpointconst = climbtime + descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist + climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = climbtime + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = climbtime;
+                            landingtime = descendtime;
+                            time = tocbodtime + lvltime + landingtime;
                         }
                         return;
                     }
@@ -250,7 +263,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
                             checkpointconst = (climbtime - prev_climbtime) + descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist + (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = (climbtime - prev_climbtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (climbdist - prev_climbdist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (climbdist - prev_climbdist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = (climbtime - prev_climbtime);
+                            landingtime = descendtime;
+                            time = tocbodtime + lvltime + landingtime;
                         }
                     }
                     else if (alt < prev_alt)
@@ -265,7 +281,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
                             checkpointconst = (prev_descendtime - descendtime) + descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist + (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = (prev_descendtime - descendtime) + descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (prev_descenddist - descenddist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - (descenddist + (prev_descenddist - descenddist)), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = (prev_descendtime - descendtime);
+                            landingtime = descendtime;
+                            time = tocbodtime + lvltime + descendtime;
                         }
                     }
                     else
@@ -280,7 +299,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(0, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM");
                             checkpointconst = descendtime - TimeSpan.FromHours(DataConverters.LengthUnits(descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = descendtime + TimeSpan.FromHours(DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = 0;
+                            landingtime = descendtime;
+                            time = tocbodtime + lvltime + landingtime;
                         }
                     }
                 }
@@ -303,7 +325,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
                             checkpointconst = (climbtime - prev_climbtime) - TimeSpan.FromHours(DataConverters.LengthUnits(climbdist - prev_climbdist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = (climbtime - prev_climbtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = (climbtime - prev_climbtime);
+                            landingtime = 0;
+                            time = tocbodtime + lvltime + landingtime;
                         }
                     }
                     else if (alt < prev_alt)
@@ -318,7 +343,10 @@ namespace Mission_Assistant
                             neffectivedst = DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM");
                             effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
                             checkpointconst = (prev_descendtime - descendtime) - TimeSpan.FromHours(DataConverters.LengthUnits(prev_descenddist - descenddist, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
-                            time = (prev_descendtime - descendtime) + TimeSpan.FromHours(DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                            tocbodtime = (prev_descendtime - descendtime);
+                            landingtime = 0;
+                            time = tocbodtime + lvltime + landingtime;
                         }
                     }
                     else
@@ -327,7 +355,10 @@ namespace Mission_Assistant
                         neffectivedst = DataConverters.LengthUnits(0, baseDistunit, "KM");
                         effectivedst = DataConverters.LengthUnits(distance, baseDistunit, "KM");
                         checkpointconst = 0;
-                        time = TimeSpan.FromHours(DataConverters.LengthUnits(distance, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        lvltime = TimeSpan.FromHours(DataConverters.LengthUnits(distance, baseDistunit, "KM") / DataConverters.SpeedUnits(speed, baseSpeedunit, "KPH")).TotalSeconds;
+                        tocbodtime = 0;
+                        landingtime = 0;
+                        time = tocbodtime + lvltime + landingtime;
                     }
                 }
             }
@@ -346,7 +377,13 @@ namespace Mission_Assistant
                         return;
                     }
                     if (distance < climbdist) fuel = 0;
-                    else fuel = climbfuel + rdfuel + DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") * lfft;
+                    else
+                    {
+                        tocbodfuel = climbfuel;
+                        landingfuel = 0;
+                        lvlfuel = DataConverters.LengthUnits(distance - climbdist, baseDistunit, "KM") * lfft;
+                        fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                    }
                     remfuel = startingfuel - sutto;
                 }
                 else if (type == "Origin")
@@ -366,7 +403,13 @@ namespace Mission_Assistant
                     if (componentID == 1)
                     {
                         if (distance < climbdist + descenddist) fuel = 0;
-                        else fuel = climbfuel + descendfuel + rdfuel + DataConverters.LengthUnits(distance - (climbdist + descenddist), baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = climbfuel;
+                            lvlfuel = DataConverters.LengthUnits(distance - (climbdist + descenddist), baseDistunit, "KM") * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                         remfuel = startingfuel - sutto;
                         landingrem = remfuel - fuel;
                         return;
@@ -374,17 +417,35 @@ namespace Mission_Assistant
                     if (alt > prev_alt)
                     {
                         if (distance < (climbdist - prev_climbdist) + descenddist) fuel = 0;
-                        else fuel = (climbfuel - prev_climbfuel) + descendfuel + rdfuel + DataConverters.LengthUnits(distance - ((climbdist - prev_climbdist) + descenddist), baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = (climbfuel - prev_climbfuel);
+                            lvlfuel = DataConverters.LengthUnits(distance - ((climbdist - prev_climbdist) + descenddist), baseDistunit, "KM") * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else if (alt < prev_alt)
                     {
                         if (distance < (prev_descenddist - descenddist) + descenddist) fuel = 0;
-                        else fuel = (prev_descendfuel - descendfuel) + descendfuel + rdfuel + DataConverters.LengthUnits(distance - ((prev_descenddist - descenddist) + descenddist), baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = (prev_descendfuel - descendfuel);
+                            lvlfuel = DataConverters.LengthUnits(distance - ((prev_descenddist - descenddist) + descenddist), baseDistunit, "KM") * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else
                     {
                         if (distance < descenddist) fuel = 0;
-                        else fuel = descendfuel + rdfuel + DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = 0;
+                            lvlfuel = DataConverters.LengthUnits(distance - descenddist, baseDistunit, "KM") * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel; 
+                        }
                     }
                     remfuel = prev_remfuel - prev_fuel;
                     landingrem = remfuel - fuel;
@@ -400,14 +461,32 @@ namespace Mission_Assistant
                     if (alt > prev_alt)
                     {
                         if (distance < climbdist - prev_climbdist) fuel = 0;
-                        else fuel = (climbfuel - prev_climbfuel) + rdfuel + DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = (climbfuel - prev_climbfuel);
+                            lvlfuel = DataConverters.LengthUnits(distance - (climbdist - prev_climbdist), baseDistunit, "KM") * lfft;
+                            landingfuel = 0;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else if (alt < prev_alt)
                     {
                         if (distance < prev_descenddist - descenddist) fuel = 0;
-                        else fuel = (prev_descendfuel - descendfuel) + rdfuel + DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") * lfft;
+                        else
+                        {
+                            tocbodfuel = (prev_descendfuel - descendfuel);
+                            lvlfuel = DataConverters.LengthUnits(distance - (prev_descenddist - descenddist), baseDistunit, "KM") * lfft;
+                            landingfuel = 0;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
-                    else fuel = rdfuel + DataConverters.LengthUnits(distance, baseDistunit, "KM") * lfft;
+                    else
+                    {
+                        tocbodfuel = 0;
+                        lvlfuel = DataConverters.LengthUnits(distance, baseDistunit, "KM") * lfft;
+                        landingfuel = 0;
+                        fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                    }
                     remfuel = prev_remfuel - prev_fuel;
                 }
             }
@@ -422,7 +501,13 @@ namespace Mission_Assistant
                         return;
                     }
                     if (time < climbtime) fuel = 0;
-                    else fuel = climbfuel + rdfuel + TimeSpan.FromSeconds(time - climbtime).TotalMinutes * lfft;
+                    else
+                    {
+                        tocbodfuel = climbfuel;
+                        lvlfuel = TimeSpan.FromSeconds(time - climbtime).TotalMinutes * lfft;
+                        landingfuel = 0;
+                        fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                    }
                     remfuel = startingfuel - sutto;
                 }
                 else if (type == "Origin")
@@ -442,30 +527,49 @@ namespace Mission_Assistant
                     if (componentID == 1)
                     {
                         if (time < climbtime + descendtime) fuel = 0;
-                        else fuel = climbfuel + descendfuel + rdfuel + TimeSpan.FromSeconds(time - (climbtime + descendtime)).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = climbfuel;
+                            lvlfuel = TimeSpan.FromSeconds(time - (climbtime + descendtime)).TotalMinutes * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                         remfuel = startingfuel - sutto;
                         landingrem = remfuel - fuel;
-                        if (rev)
-                        {
-                            landingfrcs = minima;
-                            frcsfuel = landingfrcs + fuel;
-                        }
                         return;
                     }
                     if (alt > prev_alt)
                     {
                         if (time < (climbtime - prev_climbtime) + descendtime) fuel = 0;
-                        else fuel = (climbfuel - prev_climbfuel) + descendfuel + rdfuel + TimeSpan.FromSeconds(time - ((climbtime - prev_climbtime) + descendtime)).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = (climbfuel - prev_climbfuel);
+                            lvlfuel = TimeSpan.FromSeconds(time - ((climbtime - prev_climbtime) + descendtime)).TotalMinutes * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else if (alt < prev_alt)
                     {
                         if (time < (prev_descendtime - descendtime) + descendtime) fuel = 0;
-                        else fuel = (prev_descendfuel - descendfuel) + descendfuel + rdfuel + TimeSpan.FromSeconds(time - ((prev_descendtime - descendtime) + descendtime)).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = (prev_descendfuel - descendfuel);
+                            lvlfuel = TimeSpan.FromSeconds(time - ((prev_descendtime - descendtime) + descendtime)).TotalMinutes * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else
                     {
                         if (time < descendtime) fuel = 0;
-                        else fuel = descendfuel + rdfuel + TimeSpan.FromSeconds(time - descendtime).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = 0;
+                            lvlfuel = TimeSpan.FromSeconds(time - descendtime).TotalMinutes * lfft;
+                            landingfuel = descendfuel;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     remfuel = prev_remfuel - prev_fuel;
                     landingrem = remfuel - fuel;
@@ -481,14 +585,32 @@ namespace Mission_Assistant
                     if (alt > prev_alt)
                     {
                         if (time < climbtime - prev_climbtime) fuel = 0;
-                        else fuel = (climbfuel - prev_climbfuel) + rdfuel + TimeSpan.FromSeconds(time - (climbtime - prev_climbtime)).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = (climbfuel - prev_climbfuel);
+                            lvlfuel = TimeSpan.FromSeconds(time - (climbtime - prev_climbtime)).TotalMinutes * lfft;
+                            landingfuel = 0;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
                     else if (alt < prev_alt)
                     {
                         if (time < prev_descendtime - descendtime) fuel = 0;
-                        else fuel = (prev_descendfuel - descendfuel) + rdfuel + TimeSpan.FromSeconds(time - (prev_descendtime - descendtime)).TotalMinutes * lfft;
+                        else
+                        {
+                            tocbodfuel = (prev_descendfuel - descendfuel);
+                            lvlfuel = TimeSpan.FromSeconds(time - (prev_descendtime - descendtime)).TotalMinutes * lfft;
+                            landingfuel = 0;
+                            fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                        }
                     }
-                    else fuel = rdfuel + TimeSpan.FromSeconds(time).TotalMinutes * lfft;
+                    else
+                    {
+                        tocbodfuel = 0;
+                        lvlfuel = TimeSpan.FromSeconds(time).TotalMinutes * lfft;
+                        landingfuel = 0;
+                        fuel = tocbodfuel + lvlfuel + landingfuel + rdfuel;
+                    }
                     remfuel = prev_remfuel - prev_fuel;
                 }
             }
@@ -516,6 +638,7 @@ namespace Mission_Assistant
                         ((parent.Children[i] as Ellipse).Tag as RouteData).distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { ((parent.Children[i] as Ellipse).Tag as RouteData).pos1, ((parent.Children[i] as Ellipse).Tag as RouteData).pos2 }, "L")).Distance, "KM", baseDistunit);
                         ((parent.Children[i] as Ellipse).Tag as RouteData).calcTime();
                         ((parent.Children[i] as Ellipse).Tag as RouteData).calcFuel();
+                        ((parent.Children[i] as Ellipse).Tag as RouteData).lvldistance = ((parent.Children[i] as Ellipse).Tag as RouteData).effectivedst - ((parent.Children[i] as Ellipse).Tag as RouteData).neffectivedst;
                         totaldistance += ((parent.Children[i] as Ellipse).Tag as RouteData).distance;
                         totaltime += ((parent.Children[i] as Ellipse).Tag as RouteData).time;
                         totalfuel += ((parent.Children[i] as Ellipse).Tag as RouteData).fuel;
@@ -646,9 +769,12 @@ namespace Mission_Assistant
         {
             foreach (FuelReduceData fd in frd.fuelReduceDatas)
             {
-                if (fd.reductionlabel.ToLower() == "sutto")
+                if (fd.reductionlabel != null)
                 {
-                    sutto = fd.reductionval;
+                    if (fd.reductionlabel.ToLower() == "sutto")
+                    {
+                        sutto = fd.reductionval;
+                    }
                 }
             }
         }

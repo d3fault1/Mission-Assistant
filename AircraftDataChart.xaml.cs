@@ -24,6 +24,7 @@ namespace Mission_Assistant
         private string performanceTable = "Performance Data", fuelTable = "Fuel Data", speedUnitTable = "Speed and Unit Data", aircraftName, opMode;
         private List<string> nameList;
         private bool isUnitsFixed = false;
+        private string cache;
         public AircraftDataChart(List<string> param, string mode)
         {
             InitializeComponent();
@@ -37,12 +38,12 @@ namespace Mission_Assistant
             performanceChart.Items.IsLiveSorting = true;
             performanceChart.DataContext = pdata;
             performanceChart.ItemsSource = pdata.performanceDatas;
-            startFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
-            startFuelChart.Items.IsLiveSorting = true;
+            //startFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
+            //startFuelChart.Items.IsLiveSorting = true;
             startFuelChart.DataContext = fsdata;
             startFuelChart.ItemsSource = fsdata.fuelStartDatas;
-            reductionFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
-            reductionFuelChart.Items.IsLiveSorting = true;
+            //reductionFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
+            //reductionFuelChart.Items.IsLiveSorting = true;
             reductionFuelChart.DataContext = frdata;
             reductionFuelChart.ItemsSource = frdata.fuelReduceDatas;
             if (!File.Exists(@".\test.db"))
@@ -195,6 +196,11 @@ namespace Mission_Assistant
 
         private void lockControls(object sender, DataGridBeginningEditEventArgs e)
         {
+            if ((sender as DataGrid).CurrentColumn.GetCellContent(e.Row) is TextBlock)
+            {
+                TextBlock t = (sender as DataGrid).CurrentColumn.GetCellContent(e.Row) as TextBlock;
+                cache = t.Text;
+            }
             alt_units.IsEnabled = false;
             dist_units.IsEnabled = false;
             speed_units.IsEnabled = false;
@@ -233,6 +239,27 @@ namespace Mission_Assistant
             speed_units.IsEnabled = true;
             fuel_units.IsEnabled = true;
             lfft_units.IsEnabled = true;
+            if (!isValid(sender as DataGrid))
+            {
+                if (e.EditingElement is TextBox)
+                {
+                    (e.EditingElement as TextBox).Text = cache;
+                }
+            }
+            else if (e.EditingElement is TextBox)
+            {
+                if (String.IsNullOrEmpty((e.EditingElement as TextBox).Text))
+                {
+                    if (sender == startFuelChart)
+                    {
+                        (e.Row.Item as FuelStartData).startlabel = "New";
+                    }
+                    else if (sender == reductionFuelChart)
+                    {
+                        (e.Row.Item as FuelReduceData).reductionlabel = "New";
+                    }
+                }
+            }
             if (isValid(performanceChart) && isValid(startFuelChart) && isValid(reductionFuelChart)) saveBtn.IsEnabled = true;
             else saveBtn.IsEnabled = false;
             (sender as DataGrid).CellEditEnding += applyDataValidation;
@@ -299,6 +326,18 @@ namespace Mission_Assistant
             }
             DialogResult = true;
             Close();
+        }
+    }
+
+    public class StringValidation : ValidationRule
+    {
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            if (String.IsNullOrEmpty(value.ToString()) || String.IsNullOrWhiteSpace(value.ToString()))
+            {
+                return new ValidationResult(false, "Value Cannot be Null or Empty");
+            }
+            else return new ValidationResult(true, "Valid");
         }
     }
 }

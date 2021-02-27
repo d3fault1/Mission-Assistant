@@ -210,6 +210,18 @@ namespace Mission_Assistant
                 if (tval == null || tval == TimeSpan.Zero) return String.Format($"N/A");
                 return String.Format($"{(int)tval.TotalMinutes}'{tval.Seconds}\"");
             }
+            else if (parameter == "MarkingCD")
+            {
+                TimeSpan tval = TimeSpan.FromSeconds((value as RouteData).tocbodtime);
+                if (tval == null || tval == TimeSpan.Zero) return String.Format($"N/A");
+                return String.Format($"{(int)tval.TotalMinutes}'{tval.Seconds}\"");
+            }
+            else if (parameter == "MarkingL")
+            {
+                TimeSpan tval = TimeSpan.FromSeconds((value as RouteData).landingtime);
+                if (tval == null || tval == TimeSpan.Zero) return String.Format($"N/A");
+                return String.Format($"{(int)tval.TotalMinutes}'{tval.Seconds}\"");
+            }
             else
             {
                 TimeSpan tval = TimeSpan.FromSeconds(System.Convert.ToDouble(value));

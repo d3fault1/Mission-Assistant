@@ -41,7 +41,8 @@ namespace Mission_Assistant
             get { return TimeSpan.FromMinutes(climbtime); }
             set
             {
-                climbtime = (value as TimeSpan?).Value.TotalMinutes;
+                if ((value as TimeSpan?).HasValue) climbtime = (value as TimeSpan?).Value.TotalMinutes;
+                else climbtime = 0;
             }
         }
         public TimeSpan? dTimeval
@@ -49,7 +50,8 @@ namespace Mission_Assistant
             get { return TimeSpan.FromMinutes(descendtime); }
             set
             {
-                descendtime = (value as TimeSpan?).Value.TotalMinutes;
+                if ((value as TimeSpan?).HasValue) descendtime = (value as TimeSpan?).Value.TotalMinutes;
+                else descendtime = 0;
             }
         }
 
