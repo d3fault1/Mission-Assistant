@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Mission_Assistant.Properties
+namespace MissionAssistant.Properties
 {
 
 

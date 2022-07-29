@@ -2,9 +2,9 @@
 using System.CodeDom;
 using System.Data.Entity.ModelConfiguration.Configuration;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
-    class DataConverters
+    static class DataConverters
     {
         public static double LengthUnits(double val, string from, string to)
         {
@@ -14,52 +14,52 @@ namespace Mission_Assistant
                     switch (from)
                     {
                         case "NM":
-                            return Math.Round(1.851999 * val, 3);
+                            return 1.851999 * val;
                         case "FT":
-                            return Math.Round(0.0003048 * val, 3);
+                            return 0.0003048 * val;
                         case "M":
-                            return Math.Round(0.001 * val, 3);
+                            return 0.001 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "NM":
                     switch (from)
                     {
                         case "KM":
-                            return Math.Round(0.539957 * val, 3);
+                            return 0.539957 * val;
                         case "FT":
-                            return Math.Round(0.000164579 * val, 3);
+                            return 0.000164579 * val;
                         case "M":
-                            return Math.Round(0.000539957 * val, 3);
+                            return 0.000539957 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "FT":
                     switch (from)
                     {
                         case "KM":
-                            return Math.Round(3280.84 * val, 3);
+                            return 3280.84 * val;
                         case "M":
-                            return Math.Round(3.28084 * val, 3);
+                            return 3.28084 * val;
                         case "NM":
-                            return Math.Round(6076.12 * val, 3);
+                            return 6076.12 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "M":
                     switch (from)
                     {
                         case "NM":
-                            return Math.Round(1852 * val, 3);
+                            return 1852 * val;
                         case "FT":
-                            return Math.Round(0.3048 * val, 3);
+                            return 0.3048 * val;
                         case "KM":
-                            return Math.Round(1000 * val, 3);
+                            return 1000 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 default:
-                    return Math.Round(val, 3);
+                    return val;
             }
         }
 
@@ -71,34 +71,34 @@ namespace Mission_Assistant
                     switch (from)
                     {
                         case "MACH":
-                            return Math.Round(1234.8 * val, 3);
+                            return 1234.8 * val;
                         case "KTS":
-                            return Math.Round(1.852 * val, 3);
+                            return 1.852 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "MACH":
                     switch (from)
                     {
                         case "KPH":
-                            return Math.Round(0.000809848 * val, 3);
+                            return 0.000809848 * val;
                         case "KTS":
-                            return Math.Round(0.00149984 * val, 3);
+                            return 0.00149984 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "KTS":
                     switch (from)
                     {
                         case "MACH":
-                            return Math.Round(666.739 * val, 3);
+                            return 666.739 * val;
                         case "KPH":
-                            return Math.Round(0.539957 * val, 3);
+                            return 0.539957 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 default:
-                    return Math.Round(val, 3);
+                    return val;
             }
         }
 
@@ -110,34 +110,34 @@ namespace Mission_Assistant
                     switch (from)
                     {
                         case "LBS":
-                            return Math.Round(0.453592 * val, 3);
+                            return 0.453592 * val;
                         case "LTR":
-                            return Math.Round(1 * val, 3);
+                            return 1 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "LBS":
                     switch (from)
                     {
                         case "KG":
-                            return Math.Round(2.20462 * val, 3);
+                            return 2.20462 * val;
                         case "LTR":
-                            return Math.Round(2.20462 * val, 3);
+                            return 2.20462 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "LTR":
                     switch (from)
                     {
                         case "KG":
-                            return Math.Round(1 * val, 3);
+                            return 1 * val;
                         case "LBS":
-                            return Math.Round(0.453592 * val, 3);
+                            return 0.453592 * val;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 default:
-                    return Math.Round(val, 3);
+                    return val;
             }
         }
 
@@ -151,7 +151,7 @@ namespace Mission_Assistant
                         case "PERKM":
                             return 0;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 case "PERKM":
                     switch (from)
@@ -159,10 +159,10 @@ namespace Mission_Assistant
                         case "PERMIN":
                             return 0;
                         default:
-                            return Math.Round(val, 3);
+                            return val;
                     }
                 default:
-                    return Math.Round(val, 3);
+                    return val;
             }
         }
 

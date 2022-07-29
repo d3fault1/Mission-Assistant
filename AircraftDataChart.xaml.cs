@@ -11,7 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
     /// <summary>
     /// Interaction logic for AircraftDataChart.xaml
@@ -38,12 +38,8 @@ namespace Mission_Assistant
             performanceChart.Items.IsLiveSorting = true;
             performanceChart.DataContext = pdata;
             performanceChart.ItemsSource = pdata.performanceDatas;
-            //startFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
-            //startFuelChart.Items.IsLiveSorting = true;
             startFuelChart.DataContext = fsdata;
             startFuelChart.ItemsSource = fsdata.fuelStartDatas;
-            //reductionFuelChart.Items.SortDescriptions.Add(new SortDescription(performanceChart.Columns[0].SortMemberPath, ListSortDirection.Ascending));
-            //reductionFuelChart.Items.IsLiveSorting = true;
             reductionFuelChart.DataContext = frdata;
             reductionFuelChart.ItemsSource = frdata.fuelReduceDatas;
             if (!File.Exists(@".\test.db"))

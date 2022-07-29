@@ -5,9 +5,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
-    class RouteData
+    class RouteData2
     {
         public string baseAltunit;
         public string baseDistunit;
@@ -189,12 +189,12 @@ namespace Mission_Assistant
             }
         }
 
-        public RouteData()
+        public RouteData2()
         {
 
         }
 
-        public RouteData(Canvas input, string aUnit, string dUnit, string sUnit, string fUnit, string lUnit)
+        public RouteData2(Canvas input, string aUnit, string dUnit, string sUnit, string fUnit, string lUnit)
         {
             parent = input;
             baseAltunit = aUnit;
@@ -627,41 +627,22 @@ namespace Mission_Assistant
             {
                 if (parent.Children[i] is Ellipse)
                 {
-                    if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID)
+                    if (((parent.Children[i] as Ellipse).Tag as RouteData2).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData2).objID == objID)
                     {
-                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin") continue;
-                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Diversion")
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Origin") continue;
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Diversion")
                         {
-                            ((parent.Children[i] as Ellipse).Tag as RouteData).calcDiversionData();
+                            ((parent.Children[i] as Ellipse).Tag as RouteData2).calcDiversionData();
                             continue;
                         }
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { ((parent.Children[i] as Ellipse).Tag as RouteData).pos1, ((parent.Children[i] as Ellipse).Tag as RouteData).pos2 }, "L")).Distance, "KM", baseDistunit);
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).calcTime();
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).calcFuel();
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).lvldistance = ((parent.Children[i] as Ellipse).Tag as RouteData).effectivedst - ((parent.Children[i] as Ellipse).Tag as RouteData).neffectivedst;
-                        totaldistance += ((parent.Children[i] as Ellipse).Tag as RouteData).distance;
-                        totaltime += ((parent.Children[i] as Ellipse).Tag as RouteData).time;
-                        totalfuel += ((parent.Children[i] as Ellipse).Tag as RouteData).fuel;
-                        foreach (UIElement cnv in parent.Children)
-                        {
-                            if (cnv is Canvas)
-                            {
-                                foreach (UIElement stp in (cnv as Canvas).Children)
-                                {
-                                    if (stp is StackPanel)
-                                    {
-                                        if ((stp as StackPanel).Tag is CheckpointData)
-                                        {
-                                            if (((stp as StackPanel).Tag as CheckpointData).routenum == ((parent.Children[i] as Ellipse).Tag as RouteData).objID && ((stp as StackPanel).Tag as CheckpointData).linenum == ((parent.Children[i] as Ellipse).Tag as RouteData).componentID - 1)
-                                            {
-                                                ((stp as StackPanel).Tag as CheckpointData).updateData();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).rev = true;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { ((parent.Children[i] as Ellipse).Tag as RouteData2).pos1, ((parent.Children[i] as Ellipse).Tag as RouteData2).pos2 }, "L")).Distance, "KM", baseDistunit);
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).calcTime();
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).calcFuel();
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).lvldistance = ((parent.Children[i] as Ellipse).Tag as RouteData2).effectivedst - ((parent.Children[i] as Ellipse).Tag as RouteData2).neffectivedst;
+                        totaldistance += ((parent.Children[i] as Ellipse).Tag as RouteData2).distance;
+                        totaltime += ((parent.Children[i] as Ellipse).Tag as RouteData2).time;
+                        totalfuel += ((parent.Children[i] as Ellipse).Tag as RouteData2).fuel;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).rev = true;
                     }
                 }
             }
@@ -669,14 +650,14 @@ namespace Mission_Assistant
             {
                 if (parent.Children[i] is Ellipse)
                 {
-                    if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID)
+                    if (((parent.Children[i] as Ellipse).Tag as RouteData2).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData2).objID == objID)
                     {
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).totaldistance = totaldistance;
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).totaltime = totaltime;
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).totalfuel = totalfuel;
-                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin" || ((parent.Children[i] as Ellipse).Tag as RouteData).type == "Diversion") continue;
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).calcFuel();
-                        ((parent.Children[i] as Ellipse).Tag as RouteData).rev = false;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).totaldistance = totaldistance;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).totaltime = totaltime;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).totalfuel = totalfuel;
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Origin" || ((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Diversion") continue;
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).calcFuel();
+                        ((parent.Children[i] as Ellipse).Tag as RouteData2).rev = false;
                     }
                 }
             }
@@ -688,25 +669,6 @@ namespace Mission_Assistant
             if (track < 0) track += 360;
             distance = DataConverters.LengthUnits((new MapRoute(new List<PointLatLng>() { pos1, pos2 }, "L")).Distance, "KM", baseDistunit);
             calcTime();
-            foreach (UIElement cnv in parent.Children)
-            {
-                if (cnv is Canvas)
-                {
-                    foreach (UIElement stp in (cnv as Canvas).Children)
-                    {
-                        if (stp is StackPanel)
-                        {
-                            if ((stp as StackPanel).Tag is CheckpointData)
-                            {
-                                if (((stp as StackPanel).Tag as CheckpointData).routenum == objID && ((stp as StackPanel).Tag as CheckpointData).linenum == componentID)
-                                {
-                                    ((stp as StackPanel).Tag as CheckpointData).updateData();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         public void setpData(PerformanceData pd, int index, double spd)
@@ -797,10 +759,10 @@ namespace Mission_Assistant
             {
                 if (parent.Children[i] is Ellipse)
                 {
-                    if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData).componentID == componentID - 1)
+                    if (((parent.Children[i] as Ellipse).Tag as RouteData2).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData2).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData2).componentID == componentID - 1)
                     {
-                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin") return;
-                        RouteData prev = (parent.Children[i] as Ellipse).Tag as RouteData;
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Origin") return;
+                        RouteData2 prev = (parent.Children[i] as Ellipse).Tag as RouteData2;
                         prev_alt = prev.alt;
                         prev_climbtime = prev.climbtime;
                         prev_climbdist = prev.climbdist;
@@ -821,10 +783,10 @@ namespace Mission_Assistant
             {
                 if (parent.Children[i] is Ellipse)
                 {
-                    if (((parent.Children[i] as Ellipse).Tag as RouteData).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData).componentID == componentID + 1)
+                    if (((parent.Children[i] as Ellipse).Tag as RouteData2).objType == objType && ((parent.Children[i] as Ellipse).Tag as RouteData2).objID == objID && ((parent.Children[i] as Ellipse).Tag as RouteData2).componentID == componentID + 1)
                     {
-                        if (((parent.Children[i] as Ellipse).Tag as RouteData).type == "Origin") return;
-                        RouteData next = (parent.Children[i] as Ellipse).Tag as RouteData;
+                        if (((parent.Children[i] as Ellipse).Tag as RouteData2).type == "Origin") return;
+                        RouteData2 next = (parent.Children[i] as Ellipse).Tag as RouteData2;
                         next_frcsfuel = next.frcsfuel;
                     }
                 }

@@ -1,0 +1,32 @@
+﻿/////////////////////////
+/////////////////////////
+/////////////////////////
+// The Datacalulations LatLng and Local conversions are experimental.
+
+// On failure will shift to plan B which is to update the RestrictPositionUpdate to restrict the distance and track of the objects instead of positions.
+
+Map drag and zoom sometimes causes wrong object position. Sometimes no update on position occurs. Critical problem.
+
+// Pre is not calculated for any leg except for starting. (Solved) (Needs Work)
+
+// This creates problems when only one leg is on a route which is landing leg. (Solved) (Needs Work)
+
+Max Min values threshold not set for typing (keydown) input, only set for adjustment buttons. const (maxRadius, minRadius, maxThickness, minThickness) etc.
+
+//GG// Diversion Leg watcherfield binding not written yet. (Solved)
+
+Regular checkpoint time calculation code not written. Half done code on checkpoint distance property changed. (Solved) (Needs Work)
+
+//GG// BAF Map does not show up (Solved)
+
+//GG// Diversion Leg content flip problem in render origin. (Solved)
+
+//GG// Alt/Speed dropdownbox does not correctly load after loading project file and selecting diversion leg. (Solved)
+
+Aircraft Chart editor not showing fuel config values. (Solved) (Needs Work)
+
+//GG// Reduction fuel value in route object is not assigned. (Solved)
+
+Coordinate positioning looback problem. Sometimes does not update or register the update. problems with the restrictloop booleans both canvas and data.
+
+Clicking on the canvas while keeping any dropdown list open on route panel causes the selected node to change position.

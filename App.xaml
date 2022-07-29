@@ -1,6 +1,6 @@
-﻿<Application x:Class="Mission_Assistant.App"
+﻿<Application x:Class="MissionAssistant.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Mission_Assistant"
+             xmlns:local="clr-namespace:MissionAssistant"
              StartupUri="MainWindow.xaml">
 </Application>

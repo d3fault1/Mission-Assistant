@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
     /// <summary>
     /// Interaction logic for PlatformsStreams.xaml

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
     /// <summary>
     /// Interaction logic for MissionPicker.xaml

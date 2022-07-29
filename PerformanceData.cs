@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace Mission_Assistant
+namespace MissionAssistant
 {
     public class PerformanceData : INotifyPropertyChanged
     {
